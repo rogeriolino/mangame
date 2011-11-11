@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="../src/mangame.core.js"></script>
+<script type="text/javascript" src="../src/mangame.geom.js"></script>
+<script type="text/javascript" src="../src/mangame.ui.js"></script>
+<script type="text/javascript" src="../src/mangame.sound.js"></script>
+<script type="text/javascript">
+    
+var SceneTest = Scene2D.extend({
+
+    init : function(game) {
+        this._super(game);
+        var self = this;
+        
+        this.music = new Sound("audio/sound.ogg");
+        
+        this.lblStatus = new Text(game.canvas, 200, 60, "Status: stoped");
+        
+        this.btnPlay = this.createButton(game, 10, 180, {
+            'out': 'Play',
+            'action': function() { self.music.play(); self.lblStatus.content = "Status: playing"; }
+        });
+        
+        this.btnPause = this.createButton(game, 150, 180, {
+            'out': 'Pause',
+            'action': function() { self.music.pause(); self.lblStatus.content = "Status: paused"; }
+        });
+        
+        this.btnStop = this.createButton(game, 300, 180, {
+            'out': 'Stop',
+            'action': function() { self.music.stop(); self.lblStatus.content = "Status: stoped"; }
+        });
+        
+        this.appendChild(this.lblStatus);
+        this.appendChild(this.btnPlay);
+        this.appendChild(this.btnPause);
+        this.appendChild(this.btnStop);
+    },
+
+    createButton : function(game, x, y, props) {
+        var outNodes = new GraphicsGroup(game.canvas, 0, 0);
+        var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
+        out.fill.color = "#f1f1f1";
+        out.stroke.color = "#cccccc";
+
+        var outLabel = new Text(game.canvas, 50, 10, props['out']);
+        outLabel.color = "#999999";
+        outLabel.align = "center";
+
+        outNodes.appendChild(out);
+        outNodes.appendChild(outLabel);
+
+        var overNodes = new GraphicsGroup(game.canvas, 0, 0);
+        var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
+        over.fill.color = "#f1f1f1";
+        over.stroke.color = "#cccccc";
+        over.shadow.color = "#cccccc";
+        over.shadow.blur = 10;
+        over.shadow.offsetX = 1;
+        over.shadow.offsetY = 1;
+
+        var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
+        overLabel.color = "#cccccc";
+        overLabel.align = "center";
+
+        overNodes.appendChild(over);
+        overNodes.appendChild(overLabel);
+
+        var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
+        var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
+        pressedLabel.color = "#cccccc";
+        pressedLabel.align = "center";
+        pressedNodes.appendChild(out);
+        pressedNodes.appendChild(pressedLabel);
+
+        var btn = new Button(game, x, y,
+            {
+                'out' : outNodes,
+                'over' : overNodes,
+                'pressed' : pressedNodes,
+                'onrelease' : props['action']
+            }
+        );
+        return btn;
+    },
+    
+    _updateImpl : function(elapsedTime) {
+    }
+
+})
+
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+
+    var game = new Game(canvas);
+    game.showFps = true;
+
+    var scene = new SceneTest(game);
+    game.addScene(scene);
+
+    game.play();
+
+}
+</script>
+</head>
+<body>
+<canvas id="canvas" width="600" height="400">
+    <p>Your browser doesn't support HTML5 Canvas</p>
+</canvas>
+</body>
+</html>
