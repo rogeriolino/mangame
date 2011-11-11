@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Animation | Mangame</title>
+<script type="text/javascript" src="../src/mangame.core.js"></script>
+<script type="text/javascript" src="../src/mangame.geom.js"></script>
+<script type="text/javascript" src="../src/mangame.ui.js"></script>
+<script type="text/javascript">
+var SceneTest = Scene2D.extend({
+
+    init : function(game) {
+        this._super(game);
+
+        var self = this;
+        this.started = false;
+
+        this.title = new Text(game.canvas, 200, 30, "HTML5 Canvas");
+        this.title.shadow.blur = 15;
+        this.title.shadow.offsetX = 1;
+        this.title.shadow.offsetY = 1;
+        this.title.size = 30;
+
+        this.car = this.createCar(game.canvas, 0, 170);
+        this.bar = this.createBar1(game.canvas, 480, 200);
+        this.bar2 = this.createBar2(game.canvas, 120, 100);
+        this.button1 = this.createButton(game, 20, 350, {
+            'out' : 'Play',
+            'over' : 'Play!',
+            'pressed' : 'Played!',
+            'action' : function() { self.started = !self.started; }
+        });
+        this.button2 = this.createButton(game, 130, 350, {
+            'out' : 'About',
+            'action' : function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogerio A Lino Filho <http://rogeriolino.com>") }
+        });
+        
+        this.appendChild(this.title);
+        this.appendChild(this.bar);
+        this.appendChild(this.car);
+        this.appendChild(this.bar2);
+        this.appendChild(this.button1);
+        this.appendChild(this.button2);
+
+        this.timer = 0;
+        this.carDown = false;
+    },
+
+    createButton : function(game, x, y, props) {
+        var outNodes = new GraphicsGroup(game.canvas, 0, 0);
+        var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
+        out.fill.color = "#f1f1f1";
+        out.stroke.color = "#cccccc";
+
+        var outLabel = new Text(game.canvas, 50, 10, props['out']);
+        outLabel.color = "#999999";
+        outLabel.align = "center";
+
+        outNodes.appendChild(out);
+        outNodes.appendChild(outLabel);
+
+        var overNodes = new GraphicsGroup(game.canvas, 0, 0);
+        var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
+        over.fill.color = "#f1f1f1";
+        over.stroke.color = "#cccccc";
+        over.shadow.color = "#cccccc";
+        over.shadow.blur = 10;
+        over.shadow.offsetX = 1;
+        over.shadow.offsetY = 1;
+
+        var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
+        overLabel.color = "#cccccc";
+        overLabel.align = "center";
+
+        overNodes.appendChild(over);
+        overNodes.appendChild(overLabel);
+
+        var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
+        var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
+        pressedLabel.color = "#cccccc";
+        pressedLabel.align = "center";
+        pressedNodes.appendChild(out);
+        pressedNodes.appendChild(pressedLabel);
+
+        var btn = new Button(game, x, y,
+            {
+                'out' : outNodes,
+                'over' : overNodes,
+                'pressed' : pressedNodes,
+                'onrelease' : props['action']
+            }
+        );
+        return btn;
+    },
+
+    createCar : function(canvas, x, y) {
+        var car = new GraphicsGroup(canvas, x, y);
+        car.width = 300;
+        car.height = 100;
+
+        var rect1 = new Rectangle(canvas, 160, 0, 100, 90, 20);
+        rect1.stroke.color = "red";
+        rect1.fill.color = "yellow";
+        car.appendChild(rect1);
+
+        var avatar = new Image2D(canvas, 160, 20, "img/avatar.png");
+        avatar.angle = -20;
+        car.appendChild(avatar);
+
+        var rect2 = new Rectangle(canvas, 0, 80, car.width, 50, 20);
+        rect2.stroke.color = "red";
+        rect2.fill.color = "yellow";
+        car.appendChild(rect2);
+
+        var tire1 = new Circle(canvas, 60, 160, 40);
+        tire1.stroke.size = 8;
+        car.appendChild(tire1);
+
+        var tire2 = new Circle(canvas, 250, 160, 40);
+        tire2.stroke.size = 8;
+        car.appendChild(tire2);
+
+        return car;
+    },
+
+    createBar1 : function(canvas, x, y) {
+        var bar = new GraphicsGroup(canvas, x, y);
+        var rect = new Rectangle(canvas, -100, -40, 200, 80);
+        bar.appendChild(rect);
+        return bar;
+    },
+
+    createBar2 : function(canvas, x, y) {
+        var bar = new GraphicsGroup(canvas, x, y);
+        bar.appendChild(new Rectangle(canvas, -50, -15, 100, 30));
+        bar.appendChild(new Circle(canvas, -60, 0, 20));
+        bar.appendChild(new Circle(canvas, 60, 0, 20));
+        return bar;
+    },
+
+    _updateImpl : function(elapsedTime) {
+        if (this.started) {
+            this.timer += elapsedTime;
+            this.bar.angle += 5;
+            if (this.bar.angle >= 360) {
+                this.bar.angle = 0;
+            }
+            this.bar2.angle -= 5;
+            if (this.bar2.angle < 0) {
+                this.bar2.angle = 360;
+            }
+            this.car.x += 5;
+            if (this.car.x > this.game.canvas.width) {
+                this.car.x = -this.car.width;
+            }
+            if (!this.carDown && this.timer > 5000) {
+                this.carDown = true;
+                this.car.y += 5;
+                this.timer = 0;
+            }
+            if (this.carDown && this.timer > 1000) {
+                this.carDown = false;
+                this.car.y -= 5;
+                this.timer = 0;
+            }
+        }
+    }
+
+})
+
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+
+    var game = new Game(canvas);
+    game.showFps = true;
+
+    var scene = new SceneTest(game);
+    game.addScene(scene);
+
+    game.play();
+
+}
+</script>
+</head>
+<body>
+<canvas id="canvas" width="600" height="400">
+    <p>Your browser doesn't support HTML5 Canvas</p>
+</canvas>
+</html>

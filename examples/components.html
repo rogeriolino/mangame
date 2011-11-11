@@ -1,43 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Sound | Mangame</title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Components | Mangame</title>
 <script type="text/javascript" src="../src/mangame.core.js"></script>
 <script type="text/javascript" src="../src/mangame.geom.js"></script>
 <script type="text/javascript" src="../src/mangame.ui.js"></script>
-<script type="text/javascript" src="../src/mangame.sound.js"></script>
 <script type="text/javascript">
-    
 var SceneTest = Scene2D.extend({
 
     init : function(game) {
         this._super(game);
         var self = this;
         
-        this.music = new Sound("audio/sound.ogg");
+        this.label1 = new Text(game.canvas, 200, 60, "Username:");
+        this.inputText = new InputText(game, 200, 75, "username");
+        this.inputText.width = 210;
         
-        this.lblStatus = new Text(game.canvas, 200, 60, "Status: stoped");
+        this.label2 = new Text(game.canvas, 200, 120, "Password:");
+        this.inputPassword = new InputPassword(game, 200, 135, "password");
+        this.inputPassword.width = 210;
         
-        this.btnPlay = this.createButton(game, 10, 180, {
-            'out': 'Play',
-            'action': function() { self.music.play(); self.lblStatus.content = "Status: playing"; }
+        this.button1 = this.createButton(game, 200, 180, {
+            'out' : 'Submit',
+            'action' : function() { alert("Username: " + self.inputText.getValue() + "\nPassword: " + self.inputPassword.getValue()); }
+        });
+        this.button2 = this.createButton(game, 310, 180, {
+            'out' : 'Clear',
+            'action' : function() { self.inputText.setValue(""); self.inputPassword.setValue(""); }
         });
         
-        this.btnPause = this.createButton(game, 150, 180, {
-            'out': 'Pause',
-            'action': function() { self.music.pause(); self.lblStatus.content = "Status: paused"; }
-        });
-        
-        this.btnStop = this.createButton(game, 300, 180, {
-            'out': 'Stop',
-            'action': function() { self.music.stop(); self.lblStatus.content = "Status: stoped"; }
-        });
-        
-        this.appendChild(this.lblStatus);
-        this.appendChild(this.btnPlay);
-        this.appendChild(this.btnPause);
-        this.appendChild(this.btnStop);
+        this.appendChild(this.label1);
+        this.appendChild(this.inputText);
+        this.appendChild(this.label2);
+        this.appendChild(this.inputPassword);
+        this.appendChild(this.button1);
+        this.appendChild(this.button2);
     },
 
     createButton : function(game, x, y, props) {
@@ -111,5 +108,4 @@ window.onload = function() {
 <canvas id="canvas" width="600" height="400">
     <p>Your browser doesn't support HTML5 Canvas</p>
 </canvas>
-</body>
 </html>
