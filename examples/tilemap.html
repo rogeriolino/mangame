@@ -2,10 +2,7 @@
 <html>
 <head>
 <title>TileMap | Mangame</title>
-<script type="text/javascript" src="../src/mangame.core.js"></script>
-<script type="text/javascript" src="../src/mangame.geom.js"></script>
-<script type="text/javascript" src="../src/mangame.ui.js"></script>
-<script type="text/javascript" src="../src/mangame.tiled.js"></script>
+<script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
 var Hero = Graphics.extend({
 
@@ -111,8 +108,7 @@ var Hero = Graphics.extend({
         } else {
             this.image.viewport.x = 0;
         }
-    },
-
+    }
 
 })
 
@@ -181,14 +177,15 @@ window.onload = function() {
 
     var canvas = new Canvas("canvas");
 
-    var game = new Game(canvas);
-    game.showFps = true;
+    var game = new Game(canvas, {use: ['geom', 'ui', 'tiled']});
+    game.onLoad = function() {
+        game.showFps = true;
 
-    var scene = new SceneTest(game);
-    game.addScene(scene);
+        var scene = new SceneTest(game);
+        game.addScene(scene);
 
-    game.play();
-
+        game.play();
+    }
 }
 </script>
 </head>

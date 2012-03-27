@@ -18,6 +18,11 @@
  * @author rogeriolino
  * 
  */
+var Mangame = {
+    name: "mangame",
+    filename: "mangame.js",
+    version: "0.1.2"
+};
 
 // Class Inheritance by John Resig
 (function(){
@@ -279,9 +284,48 @@ var Scene2D = Scene.extend({
 
 })
 
-var Game = Graphics.extend({
+var Loader = Class.extend({
+    
+    init: function(props) {
+        props = props || {};
+        this.onStart = (typeof(props.onLoad) == "function") ? props.onStart : (function(){});
+        this.onLoad = (typeof(props.onLoad) == "function") ? props.onLoad : (function(){});
+    }
+    
+});
 
-    init : function(canvas) {
+var JsLoader = Loader.extend({
+    
+    init: function(url, props) {
+        var self = this;
+        this._super(props);
+        this.script = document.createElement('script');
+        this.script.type= 'text/javascript';
+        this.script.src= url;
+        if (this.script.readyState) { // IE
+            this.script.onreadystatechange = function() {
+                if (self.script.readyState == "loaded" || self.script.readyState == "complete") {
+                    self.script.onreadystatechange = null;
+                    self.onLoad();
+                }
+            };
+        } else { // others
+            this.script.onload = function(){
+                self.onLoad();
+            };
+        }
+        var head = document.getElementsByTagName('head')[0];
+        head.appendChild(this.script);
+        this.onStart();
+    }
+    
+});
+
+var Game = Graphics.extend({
+    
+    init : function(canvas, props) {
+        props = props || {};
+        this.onLoad = function() {};
         this.canvas = canvas;
         this.scenes = new Array();
         this.running = false;
@@ -296,6 +340,51 @@ var Game = Graphics.extend({
         this.mouse = new Mouse(this);
         this.keyboard = new Keyboard(this);
         this.viewport = new Viewport(0, 0, this.canvas.width, this.canvas.height);
+        // dependencies
+        this.dependencies = props.use || new Array();
+        this.totalDependenciesLoaded = 0;
+        this.totalDependencies = this.dependencies.length;
+        this.loadDependencies();
+    },
+    
+    loadDependencies: function() {
+        var self = this;
+        // finding mangame script path
+        var path = "";
+        var scripts = document.getElementsByTagName("script");
+        for (var i = 0; i < scripts.length; i++) {
+            var script = scripts[i];
+            var src = script.src.split('?')[0];
+            if (src.substr(-Mangame.filename.length) == Mangame.filename) {
+                path = src;
+                break;
+            }
+        }
+        if (self.totalDependencies > 0) {
+            var loadStatus = function(message) { 
+                self.canvas.clear();
+                var text = new Text(self.canvas, 10, self.canvas.height - 30, message); 
+                text.color = "#999";
+                text.draw();
+            };
+            for (var i in this.dependencies) {
+                var url = path.replace(Mangame.filename, "mangame." + this.dependencies[i] + ".js");
+                new JsLoader(url, {
+                    onStart: function() {
+                        loadStatus("loading " + self.dependencies[i] + "...");
+                    },
+                    onLoad: function() { 
+                        self.totalDependenciesLoaded++;
+                        if (self.totalDependenciesLoaded >= self.totalDependencies) {
+                            loadStatus("dependencies loaded");
+                            self.onLoad();
+                        }
+                    }
+                });
+            }
+        } else {
+            self.onLoad();
+        }
     },
 
     addScene : function(scene) {
@@ -310,11 +399,11 @@ var Game = Graphics.extend({
     },
 
     play : function() {
-        this.running = true;
-        if (this.running) {
-            this.run();
-            var game = this;
-            this.intervalId = setInterval(function() {game.run()}, 1000 / this.maxFps);
+        var game = this;
+        game.running = true;
+        if (game.running) {
+            game.run();
+            game.intervalId = setInterval(function() {game.run()}, 1000 / game.maxFps);
         }
     },
 

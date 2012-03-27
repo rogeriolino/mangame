@@ -20,15 +20,15 @@
  */
 var Sound = Class.extend({
 
-    init: function(url) {
+    init: function(url, loop) {
         var self = this;
         this.url = url;
+        this.loop = (loop == true);
         this.autoplay = false;
-        this.loop = false;
         this.loaded = false;
         this.playing = false;
         this.type = this._mimetype(url);
-        this.audio = this._createAudio(function() { self.loaded = true; });
+        this.audio = this._createAudio(function() { self.loaded = true; if (self.autoplay) { self.play(); } });
     },
     
     _mimetype: function(url) {
@@ -38,9 +38,6 @@ var Sound = Class.extend({
     
     _createAudio: function(onload) {
         var audio = new Audio(this.url);
-        if (this.autoplay) {
-            audio.autoplay = "autoplay";
-        }
         if (this.loop) {
             audio.loop = "loop";
         }
