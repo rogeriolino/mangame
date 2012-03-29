@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Collision Check | Mangame</title>
+<script type="text/javascript" src="../src/mangame.js"></script>
+<script type="text/javascript">
+
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+
+    var game = new Game(canvas, {require: ['geom', 'ui', 'physics']});
+    game.onLoad = function() {
+        
+        var SceneTest = PhysicsScene2D.extend({
+
+            init: function(game) {
+                this._super(game);
+                var self = this;
+
+                this.hero = new Circle(game.canvas, 270, 150, 20);
+//                this.hero = new Rectangle(game.canvas, 270, 150, 40, 40, 10);
+                this.hero.stroke.color("black");
+                this.hero.fill.color("yellow");
+
+                this.box = new Rectangle(game.canvas, 170, 200, 40, 40, 1);
+                this.box.stroke.color("black");
+                this.box.fill.color("green");
+
+                this.circle = new Circle(game.canvas, 70, 120, 50);
+                this.circle.stroke.color("black");
+                this.circle.fill.color("red");
+
+                this.description = new Text(game.canvas, game.canvas.width() / 2, game.canvas.height() - 50, "Use arrow keys to move the square");
+                this.description.align("center");
+
+                this.collLabel = new Text(game.canvas, game.canvas.width() / 2, game.canvas.height() - 30, "----");
+                this.collLabel.align("center");
+                this.collLabel.color("red");
+
+                this.walkingX = 0;
+                this.walkingY = 0;
+                this.speed = 5;
+
+                game.addEventListener(Keyboard.KEY_DOWN, function(e) { self.moveHero(e) });
+                game.addEventListener(Keyboard.KEY_UP, function(e) { self.stopHero(e) });
+                game.addEventListener(Keyboard.KEY_DOWN, function(e) {});
+
+                this.appendChild(this.box);
+                this.appendChild(this.circle);
+                this.appendChild(this.hero);
+                this.appendChild(this.description);
+                this.appendChild(this.collLabel);
+
+                var group = new CollisionGroup();
+//                var heroParticle = new RectangleParticle(this.hero);
+                var heroParticle = new CircleParticle(this.hero);
+                heroParticle.onCollide = function(b) { 
+                    self.collLabel.value("collision!");
+                    var checkId = setInterval(function() {
+                        if (!heroParticle.isCollision()) {
+                            self.collLabel.value("----");
+                            clearInterval(checkId);
+                        }
+                    }, 10);
+                };
+                group.appendChild(heroParticle);
+                group.appendChild(new RectangleParticle(this.box));
+                group.appendChild(new CircleParticle(this.circle));
+                this.collisionGroups.push(group);
+            },
+
+            moveHero: function(e) {
+                switch (e.originalEvent.keyCode) {
+                case 37:
+                    this.walkingX = -1;
+                    break;
+                case 38:
+                    this.walkingY = -1;
+                    break;
+                case 39:
+                    this.walkingX = 1;
+                    break;
+                case 40:
+                    this.walkingY = 1;
+                    break;
+                }
+            },
+
+            stopHero: function(e) {
+                switch (e.originalEvent.keyCode) {
+                case 38:
+                case 40:
+                    this.walkingY = 0;
+                    break;
+                case 37:
+                case 39:
+                    this.walkingX = 0;
+                    break;
+                }
+            },
+
+            _updateImpl: function(elapsedTime) {
+                this.hero.pos.x(this.hero.pos.x() + this.speed * this.walkingX);
+                this.hero.pos.y(this.hero.pos.y() + this.speed * this.walkingY);
+            }
+
+        })
+        
+        game.showFps = true;
+
+        var scene = new SceneTest(game);
+        game.addScene(scene);
+
+        game.play();
+    }
+
+}
+</script>
+</head>
+<body>
+<canvas id="canvas" width="600" height="400">
+    <p>Your browser doesn't support HTML5 Canvas</p>
+</canvas>
+</html>

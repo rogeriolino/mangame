@@ -6,17 +6,17 @@
 <script type="text/javascript">
 var SceneTest = Scene2D.extend({
 
-    init : function(game) {
+    init: function(game) {
         this._super(game);
 
         var self = this;
         this.started = false;
 
         this.title = new Text(game.canvas, 200, 30, "HTML5 Canvas");
-        this.title.shadow.blur = 15;
-        this.title.shadow.offsetX = 1;
-        this.title.shadow.offsetY = 1;
-        this.title.size = 30;
+        this.title.shadow.blur(15);
+        this.title.shadow.offsetX(1);
+        this.title.shadow.offsetY(1);
+        this.title.size(30);
 
         this.car = this.createCar(game.canvas, 0, 170);
         this.bar = this.createBar1(game.canvas, 480, 200);
@@ -25,11 +25,11 @@ var SceneTest = Scene2D.extend({
             'out' : 'Play',
             'over' : 'Play!',
             'pressed' : 'Played!',
-            'action' : function() { self.started = !self.started; }
+            'action': function() { self.started = !self.started; }
         });
         this.button2 = this.createButton(game, 130, 350, {
             'out' : 'About',
-            'action' : function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogerio A Lino Filho <http://rogeriolino.com>") }
+            'action': function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogerio A Lino Filho <http://rogeriolino.com>") }
         });
         
         this.appendChild(this.title);
@@ -43,39 +43,39 @@ var SceneTest = Scene2D.extend({
         this.carDown = false;
     },
 
-    createButton : function(game, x, y, props) {
+    createButton: function(game, x, y, props) {
         var outNodes = new GraphicsGroup(game.canvas, 0, 0);
         var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        out.fill.color = "#f1f1f1";
-        out.stroke.color = "#cccccc";
+        out.fill.color("#f1f1f1");
+        out.stroke.color("#cccccc");
 
         var outLabel = new Text(game.canvas, 50, 10, props['out']);
-        outLabel.color = "#999999";
-        outLabel.align = "center";
+        outLabel.color("#999999");
+        outLabel.align("center");
 
         outNodes.appendChild(out);
         outNodes.appendChild(outLabel);
 
         var overNodes = new GraphicsGroup(game.canvas, 0, 0);
         var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        over.fill.color = "#f1f1f1";
-        over.stroke.color = "#cccccc";
-        over.shadow.color = "#cccccc";
-        over.shadow.blur = 10;
-        over.shadow.offsetX = 1;
-        over.shadow.offsetY = 1;
+        over.fill.color("#f1f1f1");
+        over.stroke.color("#cccccc");
+        over.shadow.color("#cccccc");
+        over.shadow.blur(10);
+        over.shadow.offsetX(1);
+        over.shadow.offsetY(1);
 
         var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
-        overLabel.color = "#cccccc";
-        overLabel.align = "center";
+        overLabel.color("#cccccc");
+        overLabel.align("center");
 
         overNodes.appendChild(over);
         overNodes.appendChild(overLabel);
 
         var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
         var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
-        pressedLabel.color = "#cccccc";
-        pressedLabel.align = "center";
+        pressedLabel.color("#cccccc");
+        pressedLabel.align("center");
         pressedNodes.appendChild(out);
         pressedNodes.appendChild(pressedLabel);
 
@@ -90,44 +90,42 @@ var SceneTest = Scene2D.extend({
         return btn;
     },
 
-    createCar : function(canvas, x, y) {
+    createCar: function(canvas, x, y) {
         var car = new GraphicsGroup(canvas, x, y);
-        car.width = 300;
-        car.height = 100;
 
         var rect1 = new Rectangle(canvas, 160, 0, 100, 90, 20);
-        rect1.stroke.color = "red";
-        rect1.fill.color = "yellow";
+        rect1.stroke.color("red");
+        rect1.fill.color("yellow");
         car.appendChild(rect1);
 
         var avatar = new Image2D(canvas, 160, 20, "img/avatar.png");
         avatar.angle = -20;
         car.appendChild(avatar);
 
-        var rect2 = new Rectangle(canvas, 0, 80, car.width, 50, 20);
-        rect2.stroke.color = "red";
-        rect2.fill.color = "yellow";
+        var rect2 = new Rectangle(canvas, 0, 80, 300, 50, 20);
+        rect2.stroke.color("red");
+        rect2.fill.color("yellow");
         car.appendChild(rect2);
 
         var tire1 = new Circle(canvas, 60, 160, 40);
-        tire1.stroke.size = 8;
+        tire1.stroke.size(8);
         car.appendChild(tire1);
 
         var tire2 = new Circle(canvas, 250, 160, 40);
-        tire2.stroke.size = 8;
+        tire2.stroke.size(8);
         car.appendChild(tire2);
 
         return car;
     },
 
-    createBar1 : function(canvas, x, y) {
+    createBar1: function(canvas, x, y) {
         var bar = new GraphicsGroup(canvas, x, y);
         var rect = new Rectangle(canvas, -100, -40, 200, 80);
         bar.appendChild(rect);
         return bar;
     },
 
-    createBar2 : function(canvas, x, y) {
+    createBar2: function(canvas, x, y) {
         var bar = new GraphicsGroup(canvas, x, y);
         bar.appendChild(new Rectangle(canvas, -50, -15, 100, 30));
         bar.appendChild(new Circle(canvas, -60, 0, 20));
@@ -135,7 +133,7 @@ var SceneTest = Scene2D.extend({
         return bar;
     },
 
-    _updateImpl : function(elapsedTime) {
+    _updateImpl: function(elapsedTime) {
         if (this.started) {
             this.timer += elapsedTime;
             this.bar.angle += 5;
@@ -146,19 +144,20 @@ var SceneTest = Scene2D.extend({
             if (this.bar2.angle < 0) {
                 this.bar2.angle = 360;
             }
-            this.car.x += 5;
-            if (this.car.x > this.game.canvas.width) {
-                this.car.x = -this.car.width;
+            this.car.pos.x(this.car.pos.x() + 5);
+            if (this.car.pos.x() > this.game.canvas.width()) {
+                this.car.pos.x(-this.car.width());
             }
-            if (!this.carDown && this.timer > 5000) {
-                this.carDown = true;
-                this.car.y += 5;
-                this.timer = 0;
-            }
-            if (this.carDown && this.timer > 1000) {
-                this.carDown = false;
-                this.car.y -= 5;
-                this.timer = 0;
+            if (this.timer > 15) {
+                if (!this.carDown) {
+                    this.carDown = true;
+                    this.car.pos.y(this.car.pos.y() + 5);
+                    this.timer = 0;
+                } else {
+                    this.carDown = false;
+                    this.car.pos.y(this.car.pos.y() - 5);
+                    this.timer = 0;
+                }
             }
         }
     }
@@ -169,7 +168,7 @@ window.onload = function() {
 
     var canvas = new Canvas("canvas");
     
-    var game = new Game(canvas, {use: ['geom', 'ui']});
+    var game = new Game(canvas, {require: ['geom', 'ui']});
     game.onLoad = function() {
         game.showFps = true;
 

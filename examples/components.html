@@ -6,25 +6,25 @@
 <script type="text/javascript">
 var SceneTest = Scene2D.extend({
 
-    init : function(game) {
+    init: function(game) {
         this._super(game);
         var self = this;
         
         this.label1 = new Text(game.canvas, 200, 60, "Username:");
         this.inputText = new InputText(game, 200, 75, "username");
-        this.inputText.width = 210;
+        this.inputText.width(210);
         
         this.label2 = new Text(game.canvas, 200, 120, "Password:");
         this.inputPassword = new InputPassword(game, 200, 135, "password");
-        this.inputPassword.width = 210;
+        this.inputPassword.width(210);
         
         this.button1 = this.createButton(game, 200, 180, {
             'out' : 'Submit',
-            'action' : function() { alert("Username: " + self.inputText.getValue() + "\nPassword: " + self.inputPassword.getValue()); }
+            'action': function() { alert("Username: " + self.inputText.value() + "\nPassword: " + self.inputPassword.value()); }
         });
         this.button2 = this.createButton(game, 310, 180, {
             'out' : 'Clear',
-            'action' : function() { self.inputText.setValue(""); self.inputPassword.setValue(""); }
+            'action': function() { self.inputText.value(""); self.inputPassword.value(""); }
         });
         
         this.appendChild(this.label1);
@@ -35,39 +35,39 @@ var SceneTest = Scene2D.extend({
         this.appendChild(this.button2);
     },
 
-    createButton : function(game, x, y, props) {
+    createButton: function(game, x, y, props) {
         var outNodes = new GraphicsGroup(game.canvas, 0, 0);
         var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        out.fill.color = "#f1f1f1";
-        out.stroke.color = "#cccccc";
+        out.fill.color("#f1f1f1");
+        out.stroke.color("#cccccc");
 
         var outLabel = new Text(game.canvas, 50, 10, props['out']);
-        outLabel.color = "#999999";
-        outLabel.align = "center";
+        outLabel.color("#999999");
+        outLabel.align("center");
 
         outNodes.appendChild(out);
         outNodes.appendChild(outLabel);
 
         var overNodes = new GraphicsGroup(game.canvas, 0, 0);
         var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        over.fill.color = "#f1f1f1";
-        over.stroke.color = "#cccccc";
-        over.shadow.color = "#cccccc";
-        over.shadow.blur = 10;
-        over.shadow.offsetX = 1;
-        over.shadow.offsetY = 1;
+        over.fill.color("#f1f1f1");
+        over.stroke.color("#cccccc");
+        over.shadow.color("#cccccc");
+        over.shadow.blur(10);
+        over.shadow.offsetX(1);
+        over.shadow.offsetY(1);
 
         var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
-        overLabel.color = "#cccccc";
-        overLabel.align = "center";
+        overLabel.color("#cccccc");
+        overLabel.align("center");
 
         overNodes.appendChild(over);
         overNodes.appendChild(overLabel);
 
         var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
         var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
-        pressedLabel.color = "#cccccc";
-        pressedLabel.align = "center";
+        pressedLabel.color("#cccccc");
+        pressedLabel.align("center");
         pressedNodes.appendChild(out);
         pressedNodes.appendChild(pressedLabel);
 
@@ -82,7 +82,7 @@ var SceneTest = Scene2D.extend({
         return btn;
     },
     
-    _updateImpl : function(elapsedTime) {
+    _updateImpl: function(elapsedTime) {
     }
 
 })
@@ -91,7 +91,7 @@ window.onload = function() {
 
     var canvas = new Canvas("canvas");
 
-    var game = new Game(canvas, {use: ['geom', 'ui']});
+    var game = new Game(canvas, {require: ['geom', 'ui']});
     game.onLoad = function() {
         game.showFps = true;
 

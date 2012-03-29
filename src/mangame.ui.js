@@ -1,54 +1,36 @@
 /**
  * Javascript Game Engine for HTML5 Canvas
  *
- * Copyright 2010 Rogerio A Lino Filho <http://rogeriolino.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * @author rogeriolino
- *
+ * @author rogeriolino <http://rogeriolino.com>
  */
 
 var UIComponent = Graphics.extend({
 
-    init : function(game, x, y) {
+    init: function(game, x, y) {
         this._super(game.canvas, x, y);
         this.game = game;
     },
 
-    isOver : function() {
-        if (this.game.mouse.x >= this.x && this.game.mouse.x <= this.x + this.getWidth()) {
-            if (this.game.mouse.y >= this.y && this.game.mouse.y <= this.y + this.getHeight()) {
-                return true;
-            }
-        }
-        return false;
-    },
+    isOver: function() {
+        var mx = this.game.mouse.pos.x();
+        var my = this.game.mouse.pos.y();
+        return (mx >= this.left() && mx <= this.right()) && (my >= this.top() && my <= this.bottom());
+    }
 
 })
 
 var InputTag = UIComponent.extend({
 
-    init : function(game, x, y, type, name) {
+    init: function(game, x, y, type, name) {
         this._super(game, x, y);
         this.type = type || "text";
         this.name = name || "";
-        this.width = 100;
-        this.height = 20;
+        this.width(100);
+        this.height(20);
         this._tag = null;
     },
 
-    _createTag : function() {
+    _createTag: function() {
         var input = document.createElement("input");
         input.setAttribute("type", this.type);
         input.style.position = "absolute";
@@ -56,19 +38,19 @@ var InputTag = UIComponent.extend({
         return input;
     },
 
-    update : function(elapsedTime) {
+    update: function(elapsedTime) {
         if (this._tag != null) {
-            var pos = DomUtils.getElementPosition(this.canvas._canvas);
+            var pos = this.game.canvas.absolutePosition();
             with (this._tag.style) {
-                top = (pos.y + this.y) + "px";
-                left = (pos.x + this.x) + "px";
-                width = this.width + "px";
-                height = this.height + "px";
+                top = (pos.y() + this.pos.y()) + "px";
+                left = (pos.x() + this.pos.x()) + "px";
+                width = this.width() + "px";
+                height = this.height() + "px";
             }
         }
     },
 
-    _drawImpl : function() {
+    _drawImpl: function() {
         if (this._tag == null) {
             this._tag = this._createTag();
             this.update(0);
@@ -76,19 +58,18 @@ var InputTag = UIComponent.extend({
         }
     },
 
-    getValue : function() {
-        return this._tag.value;
-    },
-
-    setValue : function(value) {
-        this._tag.value = value;
+    value: function(v) {
+        if (!arguments.length) {
+            return this._tag.value;
+        }
+        this._tag.value = v;
     }
 
 });
 
 var InputText = InputTag.extend({
 
-    init : function(game, x, y, name) {
+    init: function(game, x, y, name) {
         this._super(game, x, y, "text", name);
     }
 
@@ -96,7 +77,7 @@ var InputText = InputTag.extend({
 
 var InputPassword = InputTag.extend({
 
-    init : function(game, x, y, name) {
+    init: function(game, x, y, name) {
         this._super(game, x, y, "password", name);
     }
 
@@ -104,7 +85,7 @@ var InputPassword = InputTag.extend({
 
 var Button = UIComponent.extend({
 
-    init : function(game, x, y, props) {
+    init: function(game, x, y, props) {
         this._super(game, x, y);
         this.out = this.getStateGraphics(props, 'out');
         this.over = this.getStateGraphics(props, 'over') || this.out;
@@ -116,9 +97,9 @@ var Button = UIComponent.extend({
         this._attachEvents();
     },
 
-    _attachEvents : function() {
+    _attachEvents: function() {
         var self = this;
-        this.game.mouse.addEventListener(Mouse.MOUSE_MOVE, function(e) {
+        this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {
                 if (!self.isPressed) {
                     if (self.isOver()) {
                         self.currentGraphic = self.over;
@@ -128,7 +109,7 @@ var Button = UIComponent.extend({
                 }
             }
         );
-        this.game.mouse.addEventListener(Mouse.MOUSE_DOWN, function(e) {
+        this.game.addEventListener(Mouse.MOUSE_DOWN, function(e) {
                 if (self.isOver()) {
                     self.isPressed = true;
                     self.currentGraphic = self.pressed;
@@ -138,7 +119,7 @@ var Button = UIComponent.extend({
                 }
             }
         );
-        this.game.mouse.addEventListener(Mouse.MOUSE_UP, function(e) {
+        this.game.addEventListener(Mouse.MOUSE_UP, function(e) {
                 if (self.isOver()) {
                     self.currentGraphic = self.over;
                     if (typeof(self.onRelease) == "function") {
@@ -152,19 +133,29 @@ var Button = UIComponent.extend({
         );
     },
 
-    getStateGraphics : function(props, key) {
+    getStateGraphics: function(props, key) {
         return this.isValidStateGraphics(props[key]) ? props[key] : null;
     },
 
-    isValidStateGraphics : function(graphic) {
+    isValidStateGraphics: function(graphic) {
         return (graphic instanceof GraphicsGroup || graphic instanceof Graphics);
     },
 
-    getWidth : function() { return this.currentGraphic.getWidth(); },
+    width: function() { 
+        if (this.currentGraphic) {
+            return this.currentGraphic.width();
+        }
+        return 0;
+    },
 
-    getHeight : function() { return this.currentGraphic.getHeight(); },
+    height: function() {
+        if (this.currentGraphic) {
+            return this.currentGraphic.height();
+        }
+        return 0;
+    },
 
-     _drawImpl : function() {
+     _drawImpl: function() {
          this.currentGraphic.canvas = this.canvas;
          this.currentGraphic.draw();
      }

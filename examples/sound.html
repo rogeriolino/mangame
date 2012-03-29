@@ -8,7 +8,7 @@
     
 var SceneTest = Scene2D.extend({
 
-    init : function(game) {
+    init: function(game) {
         this._super(game);
         var self = this;
         
@@ -18,17 +18,17 @@ var SceneTest = Scene2D.extend({
         
         this.btnPlay = this.createButton(game, 10, 180, {
             'out': 'Play',
-            'action': function() { self.music.play(); self.lblStatus.content = "Status: playing"; }
+            'action': function() { self.music.play(); self.lblStatus.value("Status: playing"); }
         });
         
         this.btnPause = this.createButton(game, 150, 180, {
             'out': 'Pause',
-            'action': function() { self.music.pause(); self.lblStatus.content = "Status: paused"; }
+            'action': function() { self.music.pause(); self.lblStatus.value("Status: paused"); }
         });
         
         this.btnStop = this.createButton(game, 300, 180, {
             'out': 'Stop',
-            'action': function() { self.music.stop(); self.lblStatus.content = "Status: stoped"; }
+            'action': function() { self.music.stop(); self.lblStatus.value("Status: stoped"); }
         });
         
         this.appendChild(this.lblStatus);
@@ -37,39 +37,39 @@ var SceneTest = Scene2D.extend({
         this.appendChild(this.btnStop);
     },
 
-    createButton : function(game, x, y, props) {
+    createButton: function(game, x, y, props) {
         var outNodes = new GraphicsGroup(game.canvas, 0, 0);
         var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        out.fill.color = "#f1f1f1";
-        out.stroke.color = "#cccccc";
+        out.fill.color("#f1f1f1");
+        out.stroke.color("#cccccc");
 
         var outLabel = new Text(game.canvas, 50, 10, props['out']);
-        outLabel.color = "#999999";
-        outLabel.align = "center";
+        outLabel.color("#999999");
+        outLabel.align("center");
 
         outNodes.appendChild(out);
         outNodes.appendChild(outLabel);
 
         var overNodes = new GraphicsGroup(game.canvas, 0, 0);
         var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        over.fill.color = "#f1f1f1";
-        over.stroke.color = "#cccccc";
-        over.shadow.color = "#cccccc";
-        over.shadow.blur = 10;
-        over.shadow.offsetX = 1;
-        over.shadow.offsetY = 1;
+        over.fill.color("#f1f1f1");
+        over.stroke.color("#cccccc");
+        over.shadow.color("#cccccc");
+        over.shadow.blur(10);
+        over.shadow.offsetX(1);
+        over.shadow.offsetY(1);
 
         var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
-        overLabel.color = "#cccccc";
-        overLabel.align = "center";
+        overLabel.color("#cccccc");
+        overLabel.align("center");
 
         overNodes.appendChild(over);
         overNodes.appendChild(overLabel);
 
         var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
         var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
-        pressedLabel.color = "#cccccc";
-        pressedLabel.align = "center";
+        pressedLabel.color("#cccccc");
+        pressedLabel.align("center");
         pressedNodes.appendChild(out);
         pressedNodes.appendChild(pressedLabel);
 
@@ -84,7 +84,7 @@ var SceneTest = Scene2D.extend({
         return btn;
     },
     
-    _updateImpl : function(elapsedTime) {
+    _updateImpl: function(elapsedTime) {
     }
 
 })
@@ -93,7 +93,7 @@ window.onload = function() {
 
     var canvas = new Canvas("canvas");
 
-    var game = new Game(canvas, {use: ['geom', 'ui', 'sound']});
+    var game = new Game(canvas, {require: ['geom', 'ui', 'sound']});
     game.onLoad = function() {
         game.showFps = true;
 

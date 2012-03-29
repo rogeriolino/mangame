@@ -6,29 +6,29 @@
 <script type="text/javascript">
 var SceneTest = Scene2D.extend({
 
-    init : function(game) {
+    init: function(game) {
         this._super(game);
         var self = this;
 
         this.hero = new Rectangle(game.canvas, 270, 150, 40, 40, 10);
-        this.hero.stroke.color = "black";
-        this.hero.fill.color = "yellow";
+        this.hero.stroke.color("black");
+        this.hero.fill.color("yellow");
 
-        this.description = new Text(game.canvas, game.canvas.width / 2, game.canvas.height - 50, "Use arrow keys to move the square");
-        this.description.align = "center";
+        this.description = new Text(game.canvas, game.canvas.width() / 2, game.canvas.height() - 50, "Use arrow keys to move the square");
+        this.description.align("center");
 
-        this.keyLabel = new Text(game.canvas, game.canvas.width / 2, game.canvas.height - 30, "----");
-        this.keyLabel.align = "center";
-        this.keyLabel.color = "red";
+        this.keyLabel = new Text(game.canvas, game.canvas.width() / 2, game.canvas.height() - 30, "----");
+        this.keyLabel.align("center");
+        this.keyLabel.color("red");
 
         this.walkingX = 0;
         this.walkingY = 0;
         this.speed = 5;
 
-        game.keyboard.addEventListener(Keyboard.KEY_DOWN, function(e) { self.moveHero(e) });
-        game.keyboard.addEventListener(Keyboard.KEY_UP, function(e) { self.stopHero(e) });
-        game.keyboard.addEventListener(Keyboard.KEY_DOWN, function(e) {
-                self.keyLabel.content = "Key is down: code " + e.keyCode;
+        game.addEventListener(Keyboard.KEY_DOWN, function(e) { self.moveHero(e); });
+        game.addEventListener(Keyboard.KEY_UP, function(e) { self.stopHero(e); });
+        game.addEventListener(Keyboard.KEY_DOWN, function(e) {
+                self.keyLabel.value("Key is down: code " + e.originalEvent.keyCode);
             }
         );
 
@@ -37,8 +37,8 @@ var SceneTest = Scene2D.extend({
         this.appendChild(this.keyLabel);
     },
 
-    moveHero : function(e) {
-        switch (e.keyCode) {
+    moveHero: function(e) {
+        switch (e.originalEvent.keyCode) {
         case 37:
             this.walkingX = -1;
             break;
@@ -52,10 +52,13 @@ var SceneTest = Scene2D.extend({
             this.walkingY = 1;
             break;
         }
+        if (this.walkingY != 0) {
+            e.originalEvent.preventDefault(); // prevent scroll
+        }
     },
 
-    stopHero : function(e) {
-        switch (e.keyCode) {
+    stopHero: function(e) {
+        switch (e.originalEvent.keyCode) {
         case 38:
         case 40:
             this.walkingY = 0;
@@ -67,9 +70,9 @@ var SceneTest = Scene2D.extend({
         }
     },
 
-    _updateImpl : function(elapsedTime) {
-        this.hero.x += this.speed * this.walkingX;
-        this.hero.y += this.speed * this.walkingY;
+    _updateImpl: function(elapsedTime) {
+        this.hero.pos.x(this.hero.pos.x() + this.speed * this.walkingX);
+        this.hero.pos.y(this.hero.pos.y() + this.speed * this.walkingY);
     }
 
 })
@@ -78,7 +81,7 @@ window.onload = function() {
 
     var canvas = new Canvas("canvas");
 
-    var game = new Game(canvas, {use: ['geom', 'ui']});
+    var game = new Game(canvas, {require: ['geom', 'ui']});
     game.onLoad = function() {
         game.showFps = true;
 
