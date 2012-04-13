@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Physics2D | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
+<script type="text/javascript" src="../src/mangame.js"></script>
+<script type="text/javascript">
+    
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+
+    var game = new Game(canvas, {require: ['geom', 'ui', 'physics2d']});
+    game.onLoad = function() {
+        
+        var SceneTest = Scene2D.extend({
+
+            init: function(game) {
+                this._super(game);
+                var self = this;
+
+                this.world = new b2World(new b2Vec2(0, 10), true);
+
+                var fixDef = new b2FixtureDef();
+                fixDef.density = 1.0;
+                fixDef.friction = 0.5;
+                fixDef.restitution = 0.2;
+
+                var bodyDef = new b2BodyDef();
+
+                //create ground
+                bodyDef.type = b2Body.b2_staticBody;
+
+                // positions the center of the object (not upper left!)
+                bodyDef.position.x = this.game.canvas.width() / 2 / WORLD_SCALE;
+                bodyDef.position.y = (this.game.canvas.height() - 50) / WORLD_SCALE;
+
+                fixDef.shape = new b2PolygonShape();
+
+                // half width, half height. eg actual height here is 1 unit
+                fixDef.shape.SetAsBox((600 / WORLD_SCALE) / 2, (10 / WORLD_SCALE) / 2);
+                this.world.CreateBody(bodyDef).CreateFixture(fixDef);
+                
+                // create
+                game.addEventListener(Mouse.MOUSE_DOWN, function(e) {
+                    self.createBlock(bodyDef, fixDef, self.game.mouse.pos);
+                });
+                
+            },
+            
+            createBlock: function(bodyDef, fixDef, pos) {
+                var halfWidth = 73 / 2 / WORLD_SCALE;
+                var halfHeight = 73 / 2 / WORLD_SCALE;
+                
+                bodyDef.type = b2Body.b2_dynamicBody;
+                bodyDef.angle = 0;
+                fixDef.shape.SetAsBox(halfWidth, halfHeight);
+                
+                bodyDef.position.x = pos.x() / WORLD_SCALE;
+                bodyDef.position.y = pos.y() / WORLD_SCALE;
+                var brick = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
+                brick.halfWidth = halfWidth;
+                brick.halfHeight = halfHeight;
+                
+                var width = brick.halfWidth * 2 * WORLD_SCALE;
+                var height = brick.halfHeight * 2 * WORLD_SCALE;
+                var x = brick.GetBody().GetPosition().x * WORLD_SCALE;
+                var y = brick.GetBody().GetPosition().y * WORLD_SCALE;
+                
+                brick.group = new GraphicsGroup(this.game.canvas, x, y);
+                
+//                brick.rect = new Rectangle(this.game.canvas, -width/2, -height/2, width, height);
+//                brick.rect.fill.color("#ffffff");
+//                brick.rect.stroke.color("#000000");
+//                brick.group.add(brick.rect);
+                
+                brick.img = new Image2D(this.game.canvas, -width/2, -height/2, "img/avatar.png");
+                brick.group.add(brick.img);
+                
+                brick.group.bind('x', function() {
+                    return brick.GetBody().GetPosition().x * WORLD_SCALE; 
+                });
+                brick.group.bind('y', function() {
+                    return brick.GetBody().GetPosition().y * WORLD_SCALE;
+                });
+                brick.group.bind('angle', function() {
+                    return brick.GetBody().GetAngle() * 180 / Math.PI;
+                });
+                this.add(brick.group);
+            },
+            
+            _updateImpl: function(elapsedTime) {
+                this.world.Step(1 / 60, 10, 10);
+                this.world.ClearForces();
+            }
+            
+        });
+        
+        game.showFps = true;
+
+        var scene = new SceneTest(game);
+        game.addScene(scene);
+
+        game.play();
+    }
+
+}
+
+</script>
+</head>
+<body>
+    <div id="example" class="physics2d">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Physics 2D example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas" width="640" height="480">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Click to add objects to canvas</p>
+                <p>Example using Box2DWeb, embedded into physics2d package.</p>
+            </div>
+        </div>
+    </div>
+</html>

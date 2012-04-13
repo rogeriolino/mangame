@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>Sound | Mangame</title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
     
@@ -31,10 +31,10 @@ var SceneTest = Scene2D.extend({
             'action': function() { self.music.stop(); self.lblStatus.value("Status: stoped"); }
         });
         
-        this.appendChild(this.lblStatus);
-        this.appendChild(this.btnPlay);
-        this.appendChild(this.btnPause);
-        this.appendChild(this.btnStop);
+        this.add(this.lblStatus);
+        this.add(this.btnPlay);
+        this.add(this.btnPause);
+        this.add(this.btnStop);
     },
 
     createButton: function(game, x, y, props) {
@@ -47,8 +47,8 @@ var SceneTest = Scene2D.extend({
         outLabel.color("#999999");
         outLabel.align("center");
 
-        outNodes.appendChild(out);
-        outNodes.appendChild(outLabel);
+        outNodes.add(out);
+        outNodes.add(outLabel);
 
         var overNodes = new GraphicsGroup(game.canvas, 0, 0);
         var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
@@ -63,15 +63,15 @@ var SceneTest = Scene2D.extend({
         overLabel.color("#cccccc");
         overLabel.align("center");
 
-        overNodes.appendChild(over);
-        overNodes.appendChild(overLabel);
+        overNodes.add(over);
+        overNodes.add(overLabel);
 
         var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
         var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
         pressedLabel.color("#cccccc");
         pressedLabel.align("center");
-        pressedNodes.appendChild(out);
-        pressedNodes.appendChild(pressedLabel);
+        pressedNodes.add(out);
+        pressedNodes.add(pressedLabel);
 
         var btn = new Button(game, x, y,
             {
@@ -107,8 +107,17 @@ window.onload = function() {
 </script>
 </head>
 <body>
-<canvas id="canvas" width="600" height="400">
-    <p>Your browser doesn't support HTML5 Canvas</p>
-</canvas>
+    <div id="example" class="sound">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Sound example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas" width="640" height="480">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Sound player demo</p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

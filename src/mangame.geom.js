@@ -1,6 +1,5 @@
 /**
  * Javascript Game Engine for HTML5 Canvas
- *
  * @author rogeriolino <http://rogeriolino.com>
  */
 

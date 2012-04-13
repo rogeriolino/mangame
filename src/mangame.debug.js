@@ -1,6 +1,5 @@
 /**
  * Javascript Game Engine for HTML5 Canvas
- *
  * @author rogeriolino <http://rogeriolino.com>
  */
 
@@ -35,8 +34,8 @@ var DebuggerUtils = Class.extend({
     createDebugWindow: function(id, output) {
         var div = document.createElement("div");
         div.setAttribute("id", id);
-        div.appendChild(output);
-        document.body.appendChild(div);
+        div.add(output);
+        document.body.add(div);
         return div;
     }
 

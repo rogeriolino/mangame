@@ -1,10 +1,7 @@
 /**
  * Javascript Game Engine for HTML5 Canvas
- *
  * @author rogeriolino <http://rogeriolino.com>
- * @version 0.2.0
  */
-
 var Tile = Graphics.extend({
 
     init: function(tileMap, row, col, tileSetRow, tileSetCol) {
@@ -57,14 +54,14 @@ var TileMap = GraphicsGroup.extend({
         }
         if (this._isValidPosition(tile.row, tile.col)) {
             var i = this._getIndex(tile.row, tile.col);
-            this.childNodes[i] = tile;
+            this.childs[i] = tile;
         }
     },
 
     getTile: function(row, col) {
         if (this._isValidPosition(row, col)) {
             var i = this._getIndex(row, col);
-            return this.childNodes[i];
+            return this.childs[i];
         }
         return null;
     },

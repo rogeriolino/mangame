@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>Animation | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
 var SceneTest = Scene2D.extend({
@@ -32,12 +33,12 @@ var SceneTest = Scene2D.extend({
             'action': function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogerio A Lino Filho <http://rogeriolino.com>") }
         });
         
-        this.appendChild(this.title);
-        this.appendChild(this.bar);
-        this.appendChild(this.car);
-        this.appendChild(this.bar2);
-        this.appendChild(this.button1);
-        this.appendChild(this.button2);
+        this.add(this.title);
+        this.add(this.bar);
+        this.add(this.car);
+        this.add(this.bar2);
+        this.add(this.button1);
+        this.add(this.button2);
 
         this.timer = 0;
         this.carDown = false;
@@ -53,8 +54,8 @@ var SceneTest = Scene2D.extend({
         outLabel.color("#999999");
         outLabel.align("center");
 
-        outNodes.appendChild(out);
-        outNodes.appendChild(outLabel);
+        outNodes.add(out);
+        outNodes.add(outLabel);
 
         var overNodes = new GraphicsGroup(game.canvas, 0, 0);
         var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
@@ -69,15 +70,15 @@ var SceneTest = Scene2D.extend({
         overLabel.color("#cccccc");
         overLabel.align("center");
 
-        overNodes.appendChild(over);
-        overNodes.appendChild(overLabel);
+        overNodes.add(over);
+        overNodes.add(overLabel);
 
         var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
         var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
         pressedLabel.color("#cccccc");
         pressedLabel.align("center");
-        pressedNodes.appendChild(out);
-        pressedNodes.appendChild(pressedLabel);
+        pressedNodes.add(out);
+        pressedNodes.add(pressedLabel);
 
         var btn = new Button(game, x, y,
             {
@@ -96,24 +97,24 @@ var SceneTest = Scene2D.extend({
         var rect1 = new Rectangle(canvas, 160, 0, 100, 90, 20);
         rect1.stroke.color("red");
         rect1.fill.color("yellow");
-        car.appendChild(rect1);
+        car.add(rect1);
 
         var avatar = new Image2D(canvas, 160, 20, "img/avatar.png");
-        avatar.angle = -20;
-        car.appendChild(avatar);
+        avatar.angle(-20);
+        car.add(avatar);
 
         var rect2 = new Rectangle(canvas, 0, 80, 300, 50, 20);
         rect2.stroke.color("red");
         rect2.fill.color("yellow");
-        car.appendChild(rect2);
+        car.add(rect2);
 
         var tire1 = new Circle(canvas, 60, 160, 40);
         tire1.stroke.size(8);
-        car.appendChild(tire1);
+        car.add(tire1);
 
         var tire2 = new Circle(canvas, 250, 160, 40);
         tire2.stroke.size(8);
-        car.appendChild(tire2);
+        car.add(tire2);
 
         return car;
     },
@@ -121,41 +122,42 @@ var SceneTest = Scene2D.extend({
     createBar1: function(canvas, x, y) {
         var bar = new GraphicsGroup(canvas, x, y);
         var rect = new Rectangle(canvas, -100, -40, 200, 80);
-        bar.appendChild(rect);
+        bar.add(rect);
         return bar;
     },
 
     createBar2: function(canvas, x, y) {
         var bar = new GraphicsGroup(canvas, x, y);
-        bar.appendChild(new Rectangle(canvas, -50, -15, 100, 30));
-        bar.appendChild(new Circle(canvas, -60, 0, 20));
-        bar.appendChild(new Circle(canvas, 60, 0, 20));
+        bar.add(new Rectangle(canvas, -50, -15, 100, 30));
+        bar.add(new Circle(canvas, -60, 0, 20));
+        bar.add(new Circle(canvas, 60, 0, 20));
         return bar;
     },
 
     _updateImpl: function(elapsedTime) {
         if (this.started) {
+            var inc = 3;
             this.timer += elapsedTime;
-            this.bar.angle += 5;
-            if (this.bar.angle >= 360) {
-                this.bar.angle = 0;
+            this.bar.angle(this.bar.angle() + inc);
+            if (this.bar.angle() >= 360) {
+                this.bar.angle(0);
             }
-            this.bar2.angle -= 5;
-            if (this.bar2.angle < 0) {
-                this.bar2.angle = 360;
+            this.bar2.angle(this.bar2.angle() - inc);
+            if (this.bar2.angle() < 0) {
+                this.bar2.angle(360);
             }
-            this.car.pos.x(this.car.pos.x() + 5);
+            this.car.pos.x(this.car.pos.x() + inc * 2);
             if (this.car.pos.x() > this.game.canvas.width()) {
                 this.car.pos.x(-this.car.width());
             }
-            if (this.timer > 15) {
+            if (this.timer > 50) {
                 if (!this.carDown) {
                     this.carDown = true;
-                    this.car.pos.y(this.car.pos.y() + 5);
+                    this.car.pos.y(this.car.pos.y() + inc);
                     this.timer = 0;
                 } else {
                     this.carDown = false;
-                    this.car.pos.y(this.car.pos.y() - 5);
+                    this.car.pos.y(this.car.pos.y() - inc);
                     this.timer = 0;
                 }
             }
@@ -182,7 +184,16 @@ window.onload = function() {
 </script>
 </head>
 <body>
-<canvas id="canvas" width="600" height="400">
-    <p>Your browser doesn't support HTML5 Canvas</p>
-</canvas>
+    <div id="example" class="animation">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Animation example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas" width="640" height="480">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Elements transform animation</p>
+            </div>
+        </div>
+    </div>
 </html>

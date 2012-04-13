@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>Keyboard | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
 var SceneTest = Scene2D.extend({
@@ -32,9 +33,9 @@ var SceneTest = Scene2D.extend({
             }
         );
 
-        this.appendChild(this.hero);
-        this.appendChild(this.description);
-        this.appendChild(this.keyLabel);
+        this.add(this.hero);
+        this.add(this.description);
+        this.add(this.keyLabel);
     },
 
     moveHero: function(e) {
@@ -95,7 +96,16 @@ window.onload = function() {
 </script>
 </head>
 <body>
-<canvas id="canvas" width="600" height="400">
-    <p>Your browser doesn't support HTML5 Canvas</p>
-</canvas>
+    <div id="example" class="keyboard">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Keyboard example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas" width="640" height="480">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Keys capture example</p>
+            </div>
+        </div>
+    </div>
 </html>

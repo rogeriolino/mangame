@@ -1,0 +1,39 @@
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    font-family: Arial, Verdana;
+    background-color: #333333;
+}
+
+h1 a {
+    color: #3B8686;
+    font-size: 20px;
+    text-decoration: none;
+}
+
+h2 {
+    color: #fff;
+    font-size: 16px;
+}
+
+#example {
+    text-align: center;
+}
+
+.canvas-frame {
+    padding: 5px 0;
+    background: #222;
+}
+
+.canvas-frame .description {
+    color: #999;
+}
+
+canvas {
+    margin: 0 auto;
+    background-color: #ffffff;
+}

@@ -1,12 +1,12 @@
 /**
  * Javascript Game Engine for HTML5 Canvas
- *
  * @author rogeriolino <http://rogeriolino.com>
  */
 var Mangame = {
     name: "mangame",
     filename: "mangame.js",
-    version: "0.1.2mmmmmmmmm"
+    version: "0.1.6",
+    dev: true
 };
 
 // Class Inheritance by John Resig
@@ -250,9 +250,10 @@ var CanvasNode = Class.extend({
         this.canvas = canvas;
         this.width(0);
         this.height(0);
+        this.angle(0);
         this.pos = new Point(x, y);
         this.shadow = new Shadow();
-        this.angle = 0;
+        this.binds = {};
     },
 
     width: function(w) {
@@ -284,11 +285,42 @@ var CanvasNode = Class.extend({
     bottom: function() {
         return this.pos.y() + this.height();
     },
+    
+    angle: function(a) {
+        if (!arguments.length) {
+            return this._angle;
+        }
+        this._angle = a;
+    },
 
     rotate: function() {
         if (this.angle != 0) {
-            var theta = this.angle * Math.PI / 180;
+            var theta = this.angle() * Math.PI / 180;
             this.canvas.context.rotate(theta);
+        }
+    },
+    
+    bind: function(prop, fn) {
+        if (typeof(fn) == 'function') {
+            this.binds[prop] = fn;
+        }
+    },
+    
+    execBinds: function() {
+        if (this.binds.x) {
+            this.pos.x(this.binds.x());
+        }
+        if (this.binds.y) {
+            this.pos.y(this.binds.y());
+        }
+        if (this.binds.width) {
+            this.width(this.binds.width());
+        }
+        if (this.binds.height) {
+            this.height(this.binds.height());
+        }
+        if (this.binds.angle) {
+            this.angle(this.binds.angle());
         }
     }
 
@@ -301,17 +333,17 @@ var CanvasNodeGroup = CanvasNode.extend({
         this.clear();
     },
 
-    appendChild: function(child) {
+    add: function(child) {
         if (child instanceof CanvasNode) {
             child.canvas = this.canvas;
-            this.childNodes.push(child);
+            this.childs.push(child);
         } else {
             throw "Invalid child: must be a CanvasNode instance, given " + ((child) ? child.constructor : child);
         }
     },
 
     clear: function() {
-        this.childNodes = [];
+        this.childs = [];
     }
 
 })
@@ -328,9 +360,9 @@ var GraphicsGroup = CanvasNodeGroup.extend({
      */
     width: function() {
         var maxWidth = 0;
-        if (this.childNodes) {
-            for (var i = 0; i < this.childNodes.length; i++) {
-                var child = this.childNodes[i];
+        if (this.childs) {
+            for (var i = 0; i < this.childs.length; i++) {
+                var child = this.childs[i];
                 var right = child.right();
                 maxWidth = (right > maxWidth) ? right : maxWidth;
             }
@@ -343,9 +375,9 @@ var GraphicsGroup = CanvasNodeGroup.extend({
      */
     height: function() { 
         var maxHeight = 0;
-        if (this.childNodes) {
-            for (var i = 0; i < this.childNodes.length; i++) {
-                var child = this.childNodes[i];
+        if (this.childs) {
+            for (var i = 0; i < this.childs.length; i++) {
+                var child = this.childs[i];
                 var bottom = child.bottom();
                 maxHeight = (bottom > maxHeight) ? bottom : maxHeight;
             }
@@ -354,10 +386,11 @@ var GraphicsGroup = CanvasNodeGroup.extend({
     },
 
     update: function(elapsedTime) {
-        for (var i = 0; i < this.childNodes.length; i++) {
-            var child = this.childNodes[i];
+        for (var i = 0; i < this.childs.length; i++) {
+            var child = this.childs[i];
             child.update(elapsedTime);
         }
+        this.execBinds();
     },
 
     draw: function() {
@@ -366,8 +399,8 @@ var GraphicsGroup = CanvasNodeGroup.extend({
             this.canvas.context.translate(this.pos.x(), this.pos.y());
             this.rotate();
             this._preDraw();
-            for (var i = 0; i < this.childNodes.length; i++) {
-                var child = this.childNodes[i];
+            for (var i = 0; i < this.childs.length; i++) {
+                var child = this.childs[i];
                 if (this._canDrawChild(child)) {
                     child.draw();
                 }
@@ -396,7 +429,9 @@ var Graphics = CanvasNode.extend({
         this.stroke = new Stroke();
     },
 
-    update: function(elapsedTime) { },
+    update: function(elapsedTime) { 
+        this.execBinds(); 
+    },
 
     draw: function() {
         if (this.visible) {
@@ -507,7 +542,7 @@ var Game = Graphics.extend({
         this.scenes = [];
         this.running = false;
         this.currentScene = null;
-        this.maxFps = 35;
+        this.maxFps = 60;
         this.fps = 0;
         this.currentFps = 0;
         this.elapsedTime = 0;
@@ -544,21 +579,28 @@ var Game = Graphics.extend({
                 text.color("#999");
                 text.draw();
             };
-            for (var i in this.dependencies) {
-                var url = path.replace(Mangame.filename, "mangame." + this.dependencies[i] + ".js?v=" + Mangame.version);
+            function loadDep(i) {
+                var dep = self.dependencies[i];
+                var url = path.replace(Mangame.filename, "mangame." + dep + ".js?v=" + Mangame.version);
+                if (Mangame.dev) {
+                    url += "&time=" + ((new Date()).getTime());
+                }
                 new JsLoader(url, {
                     onStart: function() {
-                        loadStatus("loading " + self.dependencies[i] + "...");
+                        loadStatus("loading " + dep + "...");
                     },
                     onLoad: function() { 
                         self.totalDependenciesLoaded++;
                         if (self.totalDependenciesLoaded >= self.totalDependencies) {
                             loadStatus("dependencies loaded");
                             self.onLoad();
+                        } else {
+                            loadDep(self.totalDependenciesLoaded);
                         }
                     }
                 });
             }
+            loadDep(self.totalDependenciesLoaded);
         } else {
             self.onLoad();
         }
@@ -587,14 +629,26 @@ var Game = Graphics.extend({
             false
         );
     },
+    
+    getRequestAnimFrame: function() {
+        var game = this;
+        // requestAnim shim layer by Paul Irish
+        return  window.requestAnimationFrame       || 
+                window.webkitRequestAnimationFrame || 
+                window.mozRequestAnimationFrame    || 
+                window.oRequestAnimationFrame      || 
+                window.msRequestAnimationFrame     || 
+                function(/* function */ callback, /* DOMElement */ element){
+                    window.setTimeout(callback, 1000 / game.maxFps);
+                };
+    },
 
     play: function() {
         var game = this;
-        game.running = true;
-        if (game.running) {
+        if (!game.running) {
             game.run();
-            game.intervalId = setInterval(function() {game.run()}, 1000 / game.maxFps);
         }
+        game.running = true;
     },
 
     run: function() {
@@ -621,6 +675,10 @@ var Game = Graphics.extend({
             text.color("red");
             text.draw();
         }
+        // loop
+        var game = this;
+        var raf = game.getRequestAnimFrame();
+        raf(function() {game.run()});
     }
 
 })
@@ -693,7 +751,7 @@ var Mouse = GameIO.extend({
         var self = this;
         this._super(game);
         this.pos = new Point(0, 0);
-        this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) { self.updatePos(e) });
+        this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {self.updatePos(e)});
     },
 
     updatePos: function(e) {
@@ -891,6 +949,7 @@ var AnimatedImage = Graphics.extend({
                 this.currentImage = this.images[this.currentFrame];
             }
         }
+        this.execBinds();
     },
     
     _drawImpl: function() {

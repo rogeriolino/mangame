@@ -1,9 +1,7 @@
 /**
  * Javascript Game Engine for HTML5 Canvas
- *
  * @author rogeriolino <http://rogeriolino.com>
  */
-
 var UIComponent = Graphics.extend({
 
     init: function(game, x, y) {
@@ -48,6 +46,7 @@ var InputTag = UIComponent.extend({
                 height = this.height() + "px";
             }
         }
+        this.execBinds();
     },
 
     _drawImpl: function() {

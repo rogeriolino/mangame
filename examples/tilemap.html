@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>TileMap | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
 var Hero = Graphics.extend({
@@ -163,8 +164,8 @@ var SceneTest = Scene2D.extend({
         this.tileMap = tmb.createTileMap(game, tmb.map1);
         this.hero = new Hero(this.tileMap, 200, 150);
 
-        this.appendChild(this.tileMap);
-        this.appendChild(this.hero);
+        this.add(this.tileMap);
+        this.add(this.hero);
 
         this.milis = 0;
         this.seconds = 0;
@@ -193,7 +194,16 @@ window.onload = function() {
 </script>
 </head>
 <body>
-<canvas id="canvas" width="600" height="400">
-    <p>Your browser doesn't support HTML5 Canvas</p>
-</canvas>
+    <div id="example" class="tilemap">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Tilemap example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas" width="640" height="480">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>RPG tilemap example</p>
+            </div>
+        </div>
+    </div>
 </html>
