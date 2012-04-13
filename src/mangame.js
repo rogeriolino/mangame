@@ -87,6 +87,11 @@ var Canvas = Class.extend({
             element = element.offsetParent;
         }
         return pos;
+    },
+    
+    isOver: function(x, y) {
+        var absPos = this.absolutePosition();
+        return (x >= absPos.x() && x <= absPos.x() + this.width()) && (y >= absPos.y() && y <= absPos.y() + this.height());
     }
 
 });
@@ -622,6 +627,10 @@ var Game = Graphics.extend({
         window.addEventListener(eventName, 
             function(e) {
                 if (typeof(fn) == 'function') {
+                    // prevent mouse event (click) on rollout
+                    if ((eventName == Mouse.MOUSE_DOWN || eventName == Mouse.MOUSE_UP)&& !self.canvas.isOver(e.clientX, e.clientY)) {
+                        return;
+                    }
                     var event = new GameEvent({canvas: self.canvas, name: eventName, originalEvent: e});
                     fn(event);
                 }
@@ -751,11 +760,15 @@ var Mouse = GameIO.extend({
         var self = this;
         this._super(game);
         this.pos = new Point(0, 0);
-        this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {self.updatePos(e)});
+        this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {self.updatePos(e.pos)});
+    },
+    
+    isMouseEvent: function(e) {
+        return e instanceof MouseEvent;
     },
 
-    updatePos: function(e) {
-        this.pos = e.pos;
+    updatePos: function(pos) {
+        this.pos = pos;
     }
     
 });

@@ -19,7 +19,8 @@ window.onload = function() {
                 this._super(game);
                 var self = this;
 
-                this.world = new b2World(new b2Vec2(0, 10), true);
+                var gravity = new b2Vec2(0, 10);
+                this.world = new b2World(gravity, true);
 
                 var fixDef = new b2FixtureDef();
                 fixDef.density = 1.0;
@@ -33,12 +34,12 @@ window.onload = function() {
 
                 // positions the center of the object (not upper left!)
                 bodyDef.position.x = this.game.canvas.width() / 2 / WORLD_SCALE;
-                bodyDef.position.y = (this.game.canvas.height() - 50) / WORLD_SCALE;
+                bodyDef.position.y = (this.game.canvas.height() - 20) / WORLD_SCALE;
 
                 fixDef.shape = new b2PolygonShape();
 
                 // half width, half height. eg actual height here is 1 unit
-                fixDef.shape.SetAsBox((600 / WORLD_SCALE) / 2, (10 / WORLD_SCALE) / 2);
+                fixDef.shape.SetAsBox((this.game.canvas.width() / WORLD_SCALE) / 2, (10 / WORLD_SCALE) / 2);
                 this.world.CreateBody(bodyDef).CreateFixture(fixDef);
                 
                 // create
