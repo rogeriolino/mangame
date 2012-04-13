@@ -20,6 +20,25 @@ h2 {
     font-size: 16px;
 }
 
+#examples {
+    padding: 15px 20px;
+}
+
+#examples ul {
+    padding: 20px 10px;
+    list-style-type: square;
+}
+
+#examples ul li a {
+    color: #999999;
+    text-decoration: none;
+}
+
+#examples ul li a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
 #example {
     text-align: center;
 }
