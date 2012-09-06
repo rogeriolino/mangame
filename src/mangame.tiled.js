@@ -20,8 +20,8 @@ var Tile = Graphics.extend({
     },
 
     _drawImpl: function() {
-        this.tileMap.image.viewport.pos.x(this.tileSetCol * this.width());
-        this.tileMap.image.viewport.pos.y(this.tileSetRow * this.height());
+        this.tileMap.image.viewport.pos().x(this.tileSetCol * this.width());
+        this.tileMap.image.viewport.pos().y(this.tileSetRow * this.height());
         this.tileMap.image.viewport.width(this.width());
         this.tileMap.image.viewport.height(this.height());
         this.tileMap.image.draw();
@@ -41,7 +41,7 @@ var TileMap = GraphicsGroup.extend({
         this.showGrid = false;
         this.tiles = [];
         this.layers = [];
-        this.image = new Image2D(game.canvas, 0, 0, url);
+        this.image = new Image2D(game.canvas, url, 0, 0);
     },
 
     _getIndex: function(row, col) {
@@ -67,8 +67,8 @@ var TileMap = GraphicsGroup.extend({
     },
 
     getTileByPos: function(x, y) {
-        var row = Math.floor((y - this.pos.y()) / this.tileHeight);
-        var col = Math.floor((x - this.pos.x()) / this.tileWidth);
+        var row = Math.floor((y - this.pos().y()) / this.tileHeight);
+        var col = Math.floor((x - this.pos().x()) / this.tileWidth);
         return this.getTile(row, col);
     },
 
@@ -82,8 +82,8 @@ var TileMap = GraphicsGroup.extend({
     _canDrawChild: function(child) {
         if (this.image.loaded) {
             var viewport = this.game.viewport;
-            if (child.pos.x() + child.width() >= viewport.pos.x() && child.pos.x() < viewport.width()) {
-                if (child.pos.y() + child.height() >= viewport.pos.y() && child.pos.y() < viewport.height()) {
+            if (child.pos().x() + child.width() >= viewport.pos().x() && child.pos().x() < viewport.width()) {
+                if (child.pos().y() + child.height() >= viewport.pos().y() && child.pos().y() < viewport.height()) {
                     return true;
                 }
             }
@@ -95,26 +95,26 @@ var TileMap = GraphicsGroup.extend({
         if (this.showGrid) {
             var line = new Line(this.game.canvas);
             line.stroke.color("red");
-            line.pos.x(0);
-            line.pos.y(0);
-            line.pos2.x(0);
-            line.pos2.y(this.rows * this.tileHeight);
+            line.pos().x(0);
+            line.pos().y(0);
+            line.pos2().x(0);
+            line.pos2().y(this.rows * this.tileHeight);
             line.draw();
-            line.pos2.x(this.cols * this.tileWidth);
-            line.pos2.y(0);
+            line.pos2().x(this.cols * this.tileWidth);
+            line.pos2().y(0);
             line.draw();
             for (var i = 0; i < this.rows; i++) {
                 for (var j = 0; j < this.cols; j++) {
-                    line.pos.x((j + 1) * this.tileWidth);
-                    line.pos.y(0);
-                    line.pos2.x((j + 1) * this.tileWidth);
-                    line.pos2.y(this.rows * this.tileHeight);
+                    line.pos().x((j + 1) * this.tileWidth);
+                    line.pos().y(0);
+                    line.pos2().x((j + 1) * this.tileWidth);
+                    line.pos2().y(this.rows * this.tileHeight);
                     line.draw();
                 }
-                line.pos.x(0);
-                line.pos.y((i + 1) * this.tileHeight);
-                line.pos2.x(this.cols * this.tileWidth);
-                line.pos2.y((i + 1) * this.tileHeight);
+                line.pos().x(0);
+                line.pos().y((i + 1) * this.tileHeight);
+                line.pos2().x(this.cols * this.tileWidth);
+                line.pos2().y((i + 1) * this.tileHeight);
                 line.draw();
             }
         }

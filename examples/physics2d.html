@@ -44,7 +44,7 @@ window.onload = function() {
                 
                 // create
                 game.addEventListener(Mouse.MOUSE_DOWN, function(e) {
-                    self.createBlock(bodyDef, fixDef, self.game.mouse.pos);
+                    self.createBlock(bodyDef, fixDef, self.game.mouse.pos());
                 });
                 
             },
@@ -75,7 +75,7 @@ window.onload = function() {
 //                brick.rect.stroke.color("#000000");
 //                brick.group.add(brick.rect);
                 
-                brick.img = new Image2D(this.game.canvas, -width/2, -height/2, "img/avatar.png");
+                brick.img = new Image2D(this.game.canvas, "img/avatar.png", -width/2, -height/2);
                 brick.group.add(brick.img);
                 
                 brick.group.bind('x', function() {
@@ -90,7 +90,7 @@ window.onload = function() {
                 this.add(brick.group);
             },
             
-            _updateImpl: function(elapsedTime) {
+            onUpdate: function(elapsedTime) {
                 this.world.Step(1 / 60, 10, 10);
                 this.world.ClearForces();
             }

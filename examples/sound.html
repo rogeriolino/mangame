@@ -14,77 +14,34 @@ var SceneTest = Scene2D.extend({
         
         this.music = new Sound("audio/sound.ogg", true);
         
-        this.lblStatus = new Text(game.canvas, 200, 60, "Status: stoped");
+        var player = new GraphicsGroup(game.canvas, 200, 60);
         
-        this.btnPlay = this.createButton(game, 10, 180, {
-            'out': 'Play',
-            'action': function() { self.music.play(); self.lblStatus.value("Status: playing"); }
+        var lblStatus = new Text(game.canvas, 0, 0, "Status: stoped");
+        player.add(lblStatus);
+        
+        var btnY = 30;
+        var btnPlay = new SimpleButton(game, 0, btnY, {
+            label: 'Play',
+            action: function() { self.music.play(); self.lblStatus.value("Status: playing"); }
         });
+        player.add(btnPlay);
         
-        this.btnPause = this.createButton(game, 150, 180, {
-            'out': 'Pause',
-            'action': function() { self.music.pause(); self.lblStatus.value("Status: paused"); }
+        var btnPause = new SimpleButton(game, btnPlay.pos().x() + btnPlay.width() + 10, btnY, {
+            label: 'Pause',
+            action: function() { self.music.pause(); self.lblStatus.value("Status: paused"); }
         });
+        player.add(btnPause);
         
-        this.btnStop = this.createButton(game, 300, 180, {
-            'out': 'Stop',
-            'action': function() { self.music.stop(); self.lblStatus.value("Status: stoped"); }
+        var btnStop = new SimpleButton(game, btnPause.pos().x() + btnPause.width() + 10, btnY, {
+            label: 'Stop',
+            action: function() { self.music.stop(); self.lblStatus.value("Status: stoped"); }
         });
+        player.add(btnStop);
         
-        this.add(this.lblStatus);
-        this.add(this.btnPlay);
-        this.add(this.btnPause);
-        this.add(this.btnStop);
-    },
-
-    createButton: function(game, x, y, props) {
-        var outNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        out.fill.color("#f1f1f1");
-        out.stroke.color("#cccccc");
-
-        var outLabel = new Text(game.canvas, 50, 10, props['out']);
-        outLabel.color("#999999");
-        outLabel.align("center");
-
-        outNodes.add(out);
-        outNodes.add(outLabel);
-
-        var overNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        over.fill.color("#f1f1f1");
-        over.stroke.color("#cccccc");
-        over.shadow.color("#cccccc");
-        over.shadow.blur(10);
-        over.shadow.offsetX(1);
-        over.shadow.offsetY(1);
-
-        var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
-        overLabel.color("#cccccc");
-        overLabel.align("center");
-
-        overNodes.add(over);
-        overNodes.add(overLabel);
-
-        var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
-        pressedLabel.color("#cccccc");
-        pressedLabel.align("center");
-        pressedNodes.add(out);
-        pressedNodes.add(pressedLabel);
-
-        var btn = new Button(game, x, y,
-            {
-                'out' : outNodes,
-                'over' : overNodes,
-                'pressed' : pressedNodes,
-                'onrelease' : props['action']
-            }
-        );
-        return btn;
+        this.add(player);
     },
     
-    _updateImpl: function(elapsedTime) {
+    onUpdate: function(elapsedTime) {
     }
 
 })

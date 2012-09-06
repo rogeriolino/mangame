@@ -19,17 +19,17 @@ var Hero = Graphics.extend({
         this.walkingX = 0;
         this.walkingY = 0;
         this.walking = false;
-        this.speed = 2;
-        this.setUp();
+        this.speed = 1;
+        this.setup();
     },
 
-    setUp: function() {
+    setup: function() {
         var self = this;
         this.imageFrames = 3;
         this.imageCurrentFrame = 0;
-        this.image = new Image2D(this.tileMap.game.canvas, 0, 0, "img/chars.png");
-        this.image.viewport.pos.x(0);
-        this.image.viewport.pos.y(0);
+        this.image = new Image2D(this.tileMap.game.canvas, "img/chars.png");
+        this.image.viewport.pos().x(0);
+        this.image.viewport.pos().y(0);
         this.image.viewport.width(this.width());
         this.image.viewport.height(this.height());
         this.tileMap.game.addEventListener(Keyboard.KEY_DOWN, function(e) { self.move(e) });
@@ -79,25 +79,25 @@ var Hero = Graphics.extend({
         if (Math.abs(this.walkingX) == Math.abs(this.walkingY)) {
             speed = this.speed / 1.5;
         }
-        var x = this.pos.x() + speed * this.walkingX;
-        var y = this.pos.y() + speed * this.walkingY;
+        var x = this.pos().x() + speed * this.walkingX;
+        var y = this.pos().y() + speed * this.walkingY;
         var tileUpLeft = this.tileMap.getTileByPos(x + this.paddingLeft, y + this.paddingTop);
         var tileUpRight = this.tileMap.getTileByPos(x + this.width() - this.paddingRight, y + this.paddingTop);
         var tileDownLeft = this.tileMap.getTileByPos(x + this.paddingLeft, y + this.height() - this.paddingBottom);
         var tileDownRight = this.tileMap.getTileByPos(x + this.width() - this.paddingRight, y + this.height() - this.paddingBottom);
         if (tileUpLeft.walkable && tileUpRight.walkable && tileDownLeft.walkable && tileDownRight.walkable) {
-            this.pos.x(x);
-            this.pos.y(y);
+            this.pos().x(x);
+            this.pos().y(y);
         }
         if (this.walkingY == -1) {
-            this.image.viewport.pos.y(this.image.viewport.height() * 3);
+            this.image.viewport.pos().y(this.image.viewport.height() * 3);
         } else if (this.walkingY == 1) {
-            this.image.viewport.pos.y(0);
+            this.image.viewport.pos().y(0);
         }
         if (this.walkingX == -1) {
-            this.image.viewport.pos.y(this.image.viewport.height());
+            this.image.viewport.pos().y(this.image.viewport.height());
         } else if (this.walkingX == 1) {
-            this.image.viewport.pos.y(this.image.viewport.height() * 2);
+            this.image.viewport.pos().y(this.image.viewport.height() * 2);
         }
         if (this.walkingX != 0 || this.walkingY != 0) {
             this.elapsedTime += elapsedTime;
@@ -107,10 +107,10 @@ var Hero = Graphics.extend({
                 if (this.imageCurrentFrame >= this.imageFrames) {
                     this.imageCurrentFrame = 0;
                 }
-                this.image.viewport.pos.x(this.image.viewport.width() * this.imageCurrentFrame);
+                this.image.viewport.pos().x(this.image.viewport.width() * this.imageCurrentFrame);
             }
         } else {
-            this.image.viewport.pos.x(0);
+            this.image.viewport.pos().x(0);
         }
     }
 
@@ -119,19 +119,21 @@ var Hero = Graphics.extend({
 var TileMapBuilder = Class.extend({
 
     init: function() {
-        this.map1 = [
-            [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
-            [[0,0,1],[1,5,1],[1,7,1],[1,7,1],[1,7,1],[1,7,1],[1,7,1],[1,7,1],[1,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
-            [[0,0,1],[2,5,1],[2,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
-            [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
-            [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[5,7,0],[5,8,0],[5,8,0],[5,9,0],[0,0,1]],
-            [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[6,7,0],[6,8,0],[6,8,0],[6,9,0],[0,0,1]],
-            [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[7,7,0],[4,2,0],[7,8,0],[7,9,0],[0,0,1]],
-            [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[4,2,0],[0,0,1],[0,0,1],[0,0,1]],
-            [[0,0,1],[4,5,1],[4,6,1],[4,6,1],[4,6,1],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[0,0,1],[0,0,1],[0,0,1]],
-            [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
-            [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]]
-        ];
+        this.maps = {
+            map1: [
+                [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+                [[0,0,1],[1,5,1],[1,7,1],[1,7,1],[1,7,1],[1,7,1],[1,7,1],[1,7,1],[1,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+                [[0,0,1],[2,5,1],[2,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+                [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+                [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[5,7,0],[5,8,0],[5,8,0],[5,9,0],[0,0,1]],
+                [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[6,7,0],[6,8,0],[6,8,0],[6,9,0],[0,0,1]],
+                [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[7,7,0],[4,2,0],[7,8,0],[7,9,0],[0,0,1]],
+                [[0,0,1],[2,5,1],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[3,1,0],[2,3,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[4,2,0],[0,0,1],[0,0,1],[0,0,1]],
+                [[0,0,1],[4,5,1],[4,6,1],[4,6,1],[4,6,1],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[4,3,0],[0,0,1],[0,0,1],[0,0,1]],
+                [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+                [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]]
+            ]
+        };
     },
 
     createTileMap: function(game, tiles) {
@@ -139,8 +141,8 @@ var TileMapBuilder = Class.extend({
         var cols = tiles[0].length;
 
         var map = new TileMap(game, 32, 32, rows, cols, "img/tilemap.png");
-        map.pos.x(25);
-        map.pos.y(25);
+        map.pos().x(25);
+        map.pos().y(25);
         for (var i = 0; i < rows; i++) {
             for (var j = 0; j < cols; j++) {
                 var tr = tiles[i][j][0];
@@ -161,7 +163,7 @@ var SceneTest = Scene2D.extend({
         this._super(game);
 
         var tmb = new TileMapBuilder();
-        this.tileMap = tmb.createTileMap(game, tmb.map1);
+        this.tileMap = tmb.createTileMap(game, tmb.maps.map1);
         this.hero = new Hero(this.tileMap, 200, 150);
 
         this.add(this.tileMap);
@@ -171,7 +173,7 @@ var SceneTest = Scene2D.extend({
         this.seconds = 0;
     },
 
-    _updateImpl: function(elapsedTime) {
+    onUpdate: function(elapsedTime) {
         this.hero.update(elapsedTime);
     }
 

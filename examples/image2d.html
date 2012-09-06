@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TileMap | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
+<script type="text/javascript" src="../src/mangame.js"></script>
+<script type="text/javascript">
+var Hero = Graphics.extend({
+
+    init: function(game, x, y) {
+        this._super(game.canvas, x, y);
+        this.width(32);
+        this.height(32);
+        this.paddingTop = 10;
+        this.paddingBottom = 2;
+        this.paddingLeft = 10;
+        this.paddingRight = 10;
+        this.setup();
+    },
+
+    setup: function() {
+        var self = this;
+        this.imageFrames = 3;
+        this.imageCurrentFrame = 0;
+        this.image = new Image2D(this.canvas, "img/chars.png");
+        this.image.viewport.pos().x(10);
+        this.image.viewport.pos().y(0);
+        this.image.viewport.width(this.width());
+        this.image.viewport.height(this.height());
+        this.elapsedTime = 0;
+    },
+
+    _drawImpl: function() {
+        this.image.draw();
+    }
+})
+
+var SceneTest = Scene2D.extend({
+    
+    init: function(game) {
+        this._super(game);
+
+        this.hero = new Hero(game, 10, 10);
+
+        this.add(this.hero);
+
+        this.milis = 0;
+        this.seconds = 0;
+    },
+
+    onUpdate: function(elapsedTime) {
+        this.hero.update(elapsedTime);
+    }
+
+})
+
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+
+    var game = new Game(canvas, {require: ['geom', 'ui', 'tiled']});
+    game.onLoad = function() {
+        game.showFps = true;
+
+        var scene = new SceneTest(game);
+        game.addScene(scene);
+
+        game.play();
+    }
+}
+</script>
+</head>
+<body>
+    <div id="debug"></div>
+    <div id="example" class="tilemap">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Tilemap example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas" width="640" height="480">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>RPG tilemap example</p>
+            </div>
+        </div>
+    </div>
+</html>

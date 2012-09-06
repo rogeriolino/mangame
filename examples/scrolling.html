@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Scrolling | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
+<script type="text/javascript" src="js/util.js"></script>
+<script type="text/javascript" src="../src/mangame.js"></script>
+<script type="text/javascript">
+
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+    
+    var game = new Game(canvas, {require: ['geom', 'ui']});
+    game.onLoad = function() {
+        
+        var SceneTest = Scene2D.extend({
+
+            init: function(game) {
+                this._super(game);
+                var self = this;
+                
+                this.maxWidth = 800;
+                this.maxHeight = 600;
+                
+                this.bg = new Pattern(game.canvas, "img/grass.jpg");
+                this.bg.viewport.width(this.maxWidth);
+                this.bg.viewport.height(this.maxHeight);
+                this.add(this.bg);
+                
+                var cornerSize = 20;
+                var corners = [
+                    [0, 0],
+                    [this.maxWidth - cornerSize, 0],
+                    [this.maxWidth - cornerSize, this.maxHeight - cornerSize],
+                    [0, this.maxHeight - cornerSize]
+                ];
+                for (var i = 0; i < 4; i++) {
+                    var corner = new Rectangle(game.canvas, corners[i][0], corners[i][1], cornerSize, cornerSize);
+                    corner.fill.color("red");
+                    this.add(corner);
+                }
+                
+                this.hero = createTopDownChar(game, 50, 50);
+                this.add(this.hero);
+                
+                this.scroller = new Scroller(game);
+                
+                game.addEventListener(Keyboard.KEY_DOWN, function(e) { self.hero.move(e); });
+                game.addEventListener(Keyboard.KEY_UP, function(e) { self.hero.stop(e); });
+                
+            },
+
+            onUpdate: function(elapsedTime) {
+                this.hero.update(this.maxWidth, this.maxHeight);
+                // scroll
+                var heroCenter = this.hero.center();
+                var x = this.game.currentScene.pos().x() + heroCenter.x();
+                var y = this.game.currentScene.pos().y() + heroCenter.y();
+                this.scroller.scrollTo(new Point(x, y));
+            }
+
+        })
+        
+        game.showFps = true;
+
+        var scene = new SceneTest(game);
+        game.addScene(scene);
+
+        game.play();
+    }
+
+}
+</script>
+</head>
+<body>
+    <div id="example" class="animation">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Scrolling example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas" width="640" height="480">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Use the arrow keys to scroll</p>
+            </div>
+        </div>
+    </div>
+</html>

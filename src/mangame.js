@@ -5,9 +5,12 @@
 var Mangame = {
     name: "mangame",
     filename: "mangame.js",
-    version: "0.1.6",
-    dev: true
+    version: "0.2.0",
+    dev: false
 };
+var scripts = document.getElementsByTagName('script');
+Mangame.script = scripts[scripts.length - 1];
+Mangame.path = Mangame.script.src.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
 
 // Class Inheritance by John Resig
 (function(){
@@ -108,17 +111,26 @@ var Point = Class.extend({
     },
     
     x: function(x) {
-        if (!arguments.length) {
-            return this._x;
+        if (arguments.length) {
+            this._x = x;
         }
-        this._x = x;
+        return this._x;
+        
     },
     
     y: function(y) {
-        if (!arguments.length) {
-            return this._y;
+        if (arguments.length) {
+            this._y = y;
         }
-        this._y = y;
+        return this._y;
+    },
+    
+    clone: function(p) {
+        if (p) {
+            return new Point(p.x(), p.y());
+        } else {
+            return new Point(this.x(), this.y());
+        }
     },
     
     toString: function() {
@@ -142,31 +154,31 @@ var Shadow = Class.extend({
     },
     
     color: function(c) {
-        if (!arguments.length) {
-            return this._color;
+        if (arguments.length) {
+            this._color = c;
         }
-        this._color = c;
+        return this._color;
     },
     
     offsetX: function(x) {
-        if (!arguments.length) {
-            return this._offsetX;
+        if (arguments.length) {
+            this._offsetX = x;
         }
-        this._offsetX = x;
+        return this._offsetX;
     },
     
     offsetY: function(y) {
-        if (!arguments.length) {
-            return this._offsetY;
+        if (arguments.length) {
+            this._offsetY = y;
         }
-        this._offsetY = y;
+        return this._offsetY;
     },
     
     blur: function(b) {
-        if (!arguments.length) {
-            return this._blur;
+        if (arguments.length) {
+            this._blur = b;
         }
-        this._blur = b;
+        return this._blur;
     }
     
 });
@@ -185,24 +197,24 @@ var Fill = Class.extend({
     },
     
     color: function(c) {
-        if (!arguments.length) {
-            return this._color;
+        if (arguments.length) {
+            this._color = c;
         }
-        this._color = c;
+        return this._color;
     },
     
     alpha: function(a) {
-        if (!arguments.length) {
-            return this._alpha;
+        if (arguments.length) {
+            this._alpha = a;
         }
-        this._alpha = a;
+        return this._alpha;
     },
     
     visible: function(v) {
-        if (!arguments.length) {
-            return this._visible;
+        if (arguments.length) {
+            this._visible = v;
         }
-        this._visible = v;
+        return this._visible;
     }
 });
 
@@ -221,31 +233,31 @@ var Stroke = Class.extend({
     },
     
     size: function(s) {
-        if (!arguments.length) {
-            return this._size;
+        if (arguments.length) {
+            this._size = s;
         }
-        this._size = s;
+        return this._size;
     },
     
     color: function(c) {
-        if (!arguments.length) {
-            return this._color;
+        if (arguments.length) {
+            this._color = c;
         }
-        this._color = c;
+        return this._color;
     },
     
     alpha: function(a) {
-        if (!arguments.length) {
-            return this._alpha;
+        if (arguments.length) {
+            this._alpha = a;
         }
-        this._alpha = a;
+        return this._alpha;
     },
     
     visible: function(v) {
-        if (!arguments.length) {
-            return this._visible;
+        if (arguments.length) {
+            this._visible = v;
         }
-        this._visible = v;
+        return this._visible;
     }
 });
 
@@ -256,31 +268,55 @@ var CanvasNode = Class.extend({
         this.width(0);
         this.height(0);
         this.angle(0);
-        this.pos = new Point(x, y);
+        this.pos(x, y);
         this.shadow = new Shadow();
         this.binds = {};
     },
+    
+    pos: function() {
+        if (arguments.length) {
+            if (arguments[0] instanceof Point) {
+                this._pos = arguments[0];
+            } else {
+                this._pos = new Point(arguments[0], arguments[1]);
+            }
+        }
+        return this._pos;
+    },
+    
+    /* position relative to canvas, and not to parent */
+    absolutePos: function() {
+        var x = 0;
+        var y = 0;
+        var node = this;
+        do {
+            x += node.pos().x();
+            y += node.pos().y();
+            node = node.parent();
+        } while (node);
+        return new Point(x, y);
+    },
 
     width: function(w) {
-        if (!arguments.length) {
-            return this._width;
+        if (arguments.length) {
+            this._width = w;
         }
-        this._width = w;
+        return this._width;
     },
 
     height: function(h) {
-        if (!arguments.length) {
-            return this._height;
+        if (arguments.length) {
+            this._height = h;
         }
-        this._height = h;
+        return this._height;
     },
     
     left: function() {
-        return this.pos.x();
+        return this.pos().x();
     },
     
     right: function() {
-        return this.pos.x() + this.width();
+        return this.pos().x() + this.width();
     },
     
     top: function() {
@@ -288,14 +324,18 @@ var CanvasNode = Class.extend({
     },
     
     bottom: function() {
-        return this.pos.y() + this.height();
+        return this.pos().y() + this.height();
+    },
+    
+    center: function() {
+        return new Point(this.pos().x() + this.width() / 2, this.pos().y() + this.height() / 2);
     },
     
     angle: function(a) {
-        if (!arguments.length) {
-            return this._angle;
+        if (arguments.length) {
+            this._angle = a;
         }
-        this._angle = a;
+        return this._angle;
     },
 
     rotate: function() {
@@ -311,21 +351,28 @@ var CanvasNode = Class.extend({
         }
     },
     
+    parent: function(node) {
+        if (arguments.length) {
+            if (node instanceof CanvasNode) {
+                this._parent = node;
+            } else {
+                throw "Invalid parent: must be a CanvasNode instance, given " + ((node) ? node.constructor : node);
+            }
+        }
+        return this._parent;
+    },
+    
     execBinds: function() {
         if (this.binds.x) {
-            this.pos.x(this.binds.x());
+            this.pos().x(this.binds.x());
         }
         if (this.binds.y) {
-            this.pos.y(this.binds.y());
+            this.pos().y(this.binds.y());
         }
-        if (this.binds.width) {
-            this.width(this.binds.width());
-        }
-        if (this.binds.height) {
-            this.height(this.binds.height());
-        }
-        if (this.binds.angle) {
-            this.angle(this.binds.angle());
+        for (var i in this.binds) {
+            if (typeof(this[i]) == 'function') {
+                this[i](this.binds[i]());
+            }
         }
     }
 
@@ -341,6 +388,7 @@ var CanvasNodeGroup = CanvasNode.extend({
     add: function(child) {
         if (child instanceof CanvasNode) {
             child.canvas = this.canvas;
+            child.parent(this);
             this.childs.push(child);
         } else {
             throw "Invalid child: must be a CanvasNode instance, given " + ((child) ? child.constructor : child);
@@ -401,12 +449,12 @@ var GraphicsGroup = CanvasNodeGroup.extend({
     draw: function() {
         if (this.visible) {
             this.canvas.context.save();
-            this.canvas.context.translate(this.pos.x(), this.pos.y());
+            this.canvas.context.translate(this.pos().x(), this.pos().y());
             this.rotate();
             this._preDraw();
             for (var i = 0; i < this.childs.length; i++) {
                 var child = this.childs[i];
-                if (this._canDrawChild(child)) {
+                if (child.draw && this._canDrawChild(child)) {
                     child.draw();
                 }
             }
@@ -442,21 +490,21 @@ var Graphics = CanvasNode.extend({
         if (this.visible) {
             this.canvas.context.beginPath();
             this.canvas.context.save();
-            this.canvas.context.translate(this.pos.x(), this.pos.y());
+            this.canvas.context.translate(this.pos().x(), this.pos().y());
             this.rotate();
-            if (this.shadow.blur() > 0) {
+            if (this.shadow && this.shadow.blur() > 0) {
                 this.canvas.context.shadowOffsetX = this.shadow.offsetX();
                 this.canvas.context.shadowOffsetY = this.shadow.offsetY();
                 this.canvas.context.shadowBlur = this.shadow.blur();
                 this.canvas.context.shadowColor = this.shadow.color();
             }
             this._drawImpl();
-            if (this.fill.visible()) {
+            if (this.fill && this.fill.visible()) {
                 this.canvas.context.globalAlpha = this.fill.alpha();
                 this.canvas.context.fillStyle = this.fill.color();
                 this.canvas.context.fill();
             }
-            if (this.stroke.visible()) {
+            if (this.stroke && this.stroke.visible()) {
                 this.canvas.context.globalAlpha = this.fill.alpha();
                 this.canvas.context.strokeStyle = this.stroke.color();
                 this.canvas.context.lineWidth = this.stroke.size();
@@ -476,7 +524,6 @@ var Graphics = CanvasNode.extend({
 
 });
 
-
 var Scene = GraphicsGroup.extend({
 
     init: function(game) {
@@ -486,10 +533,10 @@ var Scene = GraphicsGroup.extend({
 
     updateScene: function(elapsedTime) {
         this.update(elapsedTime);
-        this._updateImpl(elapsedTime);
+        this.onUpdate(elapsedTime);
     },
 
-    _updateImpl: function(elapsedTime) {}
+    onUpdate: function(elapsedTime) {}
 
 })
 
@@ -566,17 +613,6 @@ var Game = Graphics.extend({
     
     loadDependencies: function() {
         var self = this;
-        // finding mangame script path
-        var path = "";
-        var scripts = document.getElementsByTagName("script");
-        for (var i = 0; i < scripts.length; i++) {
-            var script = scripts[i];
-            var src = script.src.split('?')[0];
-            if (src.substr(-Mangame.filename.length) == Mangame.filename) {
-                path = src;
-                break;
-            }
-        }
         if (self.totalDependencies > 0) {
             var loadStatus = function(message) { 
                 self.canvas.clear();
@@ -586,7 +622,7 @@ var Game = Graphics.extend({
             };
             function loadDep(i) {
                 var dep = self.dependencies[i];
-                var url = path.replace(Mangame.filename, "mangame." + dep + ".js?v=" + Mangame.version);
+                var url = Mangame.path + "/mangame." + dep + ".js?v=" + Mangame.version;
                 if (Mangame.dev) {
                     url += "&time=" + ((new Date()).getTime());
                 }
@@ -725,26 +761,81 @@ var GameEvent = Class.extend({
 var Viewport = Class.extend({
 
     init: function(x, y, w, h) {
-        this.pos = new Point(x, y);
+        this.pos(x, y);
         this.width(w || 0);
         this.height(h || 0);
     },
     
-    width: function(w) {
-        if (!arguments.length) {
-            return this._width;
+    pos: function() {
+        if (arguments.length) {
+            if (arguments[0] instanceof Point) {
+                this._pos = arguments[0];
+            } else {
+                this._pos = new Point(arguments[0], arguments[1]);
+            }
         }
-        this._width = w;
+        return this._pos;
+    },
+    
+    width: function(w) {
+        if (arguments.length) {
+            this._width = w;
+        }
+        return this._width;
     },
     
     height: function(h) {
-        if (!arguments.length) {
-            return this._height;
+        if (arguments.length) {
+            this._height = h;
         }
-        this._height = h;
+        return this._height;
+    },
+    
+    contains: function(pos) {
+        return (pos.x() >= this.pos().x() && pos.x() <= this.pos().x()) && (pos.y() >= this.pos().y() && pos.y() <= this.pos().y());
     }
 
 })
+
+var Scroller = Class.extend({
+    
+    init: function(game) {
+        this.game = game;
+    },
+        
+    scrollTo: function(pos) {
+        if (pos instanceof Point) {
+            var scene = this.game.currentScene;
+            if (scene.width() > this.game.canvas.width()) {
+                var pct = pos.x() * 100 / this.game.canvas.width();
+                if (pct < 0) {
+                    pct = 0;
+                }
+                if (pct > 100) {
+                    pct = 100;
+                }
+                var sceneX = (scene.width() - this.game.canvas.width()) * pct / 100;
+                if (sceneX >= 0 && scene.width() - sceneX > this.game.canvas.width()) {
+                    scene.pos().x(-sceneX);
+                }
+            }
+            if (scene.height() > this.game.canvas.height()) {
+                var pct = pos.y() * 100 / this.game.canvas.height();
+                if (pct < 0) {
+                    pct = 0;
+                }
+                if (pct > 100) {
+                    pct = 100;
+                }
+                var sceneY = (scene.height() - this.game.canvas.height()) * pct / 100;
+                if (sceneY >= 0 && scene.height() - sceneY > this.game.canvas.height()) {
+                    scene.pos().y(-sceneY);
+                }
+            }
+        }
+    }
+    
+});
 
 var GameIO = Class.extend({
 
@@ -759,8 +850,19 @@ var Mouse = GameIO.extend({
     init: function(game) {
         var self = this;
         this._super(game);
-        this.pos = new Point(0, 0);
+        this.pos(0, 0);
         this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {self.updatePos(e.pos)});
+    },
+    
+    pos: function() {
+        if (arguments.length) {
+            if (arguments[0] instanceof Point) {
+                this._pos = arguments[0];
+            } else {
+                this._pos = new Point(arguments[0], arguments[1]);
+            }
+        }
+        return this._pos;
     },
     
     isMouseEvent: function(e) {
@@ -768,7 +870,7 @@ var Mouse = GameIO.extend({
     },
 
     updatePos: function(pos) {
-        this.pos = pos;
+        this.pos(pos);
     }
     
 });
@@ -805,52 +907,52 @@ var Text = Graphics.extend({
     },
     
     value: function(v) {
-        if (!arguments.length) {
-            return this._value;
+        if (arguments.length) {
+            this._value = v;
         }
-        this._value = v;
+        return this._value;
     },
     
     size: function(s) {
-        if (!arguments.length) {
-            return this._size;
+        if (arguments.length) {
+            this._size = s;
         }
-        this._size = s;
+        return this._size;
     },
     
     font: function(f) {
-        if (!arguments.length) {
-            return this._font;
+        if (arguments.length) {
+            this._font = f;
         }
-        this._font = f;
+        return this._font;
     },
     
     color: function(c) {
-        if (!arguments.length) {
-            return this._color;
+        if (arguments.length) {
+            this._color = c;
         }
-        this._color = c;
+        return this._color;
     },
     
     bold: function(b) {
-        if (!arguments.length) {
-            return this._bold;
+        if (arguments.length) {
+            this._bold = b;
         }
-        this._bold = b;
+        return this._bold;
     },
     
     baseline: function(b) {
-        if (!arguments.length) {
-            return this._baseline;
+        if (arguments.length) {
+            this._baseline = b;
         }
-        this._baseline = b;
+        return this._baseline;
     },
     
     align: function(a) {
-        if (!arguments.length) {
-            return this._align;
+        if (arguments.length) {
+            this._align = a;
         }
-        this._align = a;
+        return this._align;
     },
 
     _drawImpl: function() {
@@ -868,25 +970,28 @@ var Image2D = Graphics.extend({
     /**
      * @param img (url or Image)
      */
-    init: function(canvas, x, y, img) {
+    init: function(canvas, img, x, y) {
         this._super(canvas, x, y);
         this.loaded = false;
-        if (img instanceof Image) {
-            this._image = img;
-            this.url = img.src;
-        } else {
-            this.url = img;
-            this._image = new Image();
-            this._image.src = this.url;
-        }
         var self = this;
         this.viewport = new Viewport(0, 0, -1, -1);
-        this._image.onload = function() {
+        var updateViewPort = function() {
             self.loaded = true;
             self.viewport.width((self.viewport.width() < 0) ? self.width() : self.viewport.width());
             self.viewport.height((self.viewport.height() < 0) ? self.height() : self.viewport.height());
+            self.onLoad();
+        }
+        if (img instanceof Image) {
+            this._image = img;
+            this.url = img.src;
+            Image2D.Cache.put(this.url, img, updateViewPort);
+        } else {
+            this.url = img;
+            this._image = Image2D.Cache.get(this.url, updateViewPort);
         }
     },
+    
+    onLoad: function() {},
 
     /**
      * Readonly
@@ -909,10 +1014,10 @@ var Image2D = Graphics.extend({
     },
 
     clone: function() {
-        var image = new Image2D(this.canvas, this.pos.x(), this.pos.y(), this.url);
+        var image = new Image2D(this.canvas, this.url, this.pos().x(), this.pos().y());
         image.loaded = this.loaded;
-        image.viewport.pos.x(this.viewport.pos.x());
-        image.viewport.pos.y(this.viewport.pos.y());
+        image.viewport.pos().x(this.viewport.pos().x());
+        image.viewport.pos().y(this.viewport.pos().y());
         image.viewport.width(this.viewport.width());
         image.viewport.height(this.viewport.height());
         return image;
@@ -920,18 +1025,95 @@ var Image2D = Graphics.extend({
 
     _drawImpl: function() {
         if (this.loaded) {
-            var sx = this.viewport.pos.x();
-            var sy = this.viewport.pos.y();
-            var sw = this.viewport.width();
-            var sh = this.viewport.height();
-            var dx = 0;
-            var dy = 0;
-            var dw = this.viewport.width();
-            var dh = this.viewport.height();
-            this.canvas.context.drawImage(this._image, sx, sy, sw, sh, dx, dy, dw, dh);
+            var sx = this.viewport.pos().x(); // The x coordinate where to start clipping
+            var sy = this.viewport.pos().y(); // The y coordinate where to start clipping
+            var sw = this.viewport.width(); // The width of the clipped image
+            var sh = this.viewport.height(); // The height of the clipped image
+            var dx = 0; // The x coordinate where to place the image on the canvas
+            var dy = 0; // The y coordinate where to place the image on the canvas
+            var dw = sw; // The width of the image to use (stretch or reduce the image)
+            var dh = sh; // The height of the image to use (stretch or reduce the image)
+            this.canvas.context.drawImage(this._image, sx, sy, dw, dh, dx, dy, dw, dh);
         }
     }
 
+});
+Image2D.Cache = {
+    images: {},
+    
+    _create: function(url) {
+        var image = new Image();
+        image.loaded = false;
+        image.src = url;
+        Image2D.Cache.put(url, image);
+        return image;
+    },
+    
+    _onload: function(image, load) {
+        if (typeof(load) == 'function') {
+            if (image.loaded) {
+                load();
+            } else {
+                image.addEventListener("load", load, false);
+            }
+        }
+    },
+    
+    put: function(url, image, load) {
+        image.addEventListener("load", function() { this.loaded = true; }, false);
+        Image2D.Cache._onload(image, load);
+        Image2D.Cache.images[url] = image;
+    },
+    
+    get: function(url, load) {
+        var image;
+        if (Image2D.Cache.images[url]) {
+            image = Image2D.Cache.images[url];
+        } else {
+            image = Image2D.Cache._create(url);
+        }
+        Image2D.Cache._onload(image, load);
+        return image;
+    }
+}
+
+var Pattern = Image2D.extend({
+    
+    init: function(canvas, img, x, y) {
+        this._super(canvas, img, x, y);
+        this.repetitions = {
+            all: 'repeat', 
+            x: 'repeat-x',
+            y: 'repeat-y',
+            no: 'no-repeat'
+        };
+        this.repeat('all');
+    },
+    
+    repeat: function(r) {
+        if (arguments.length) {
+            if (this.repetitions[r]) {
+                this._repeat = r;
+            } else {
+                throw "Invalid repetition value: " + r;
+            }
+        }
+        return this._repeat;
+    },
+
+    _drawImpl: function() {
+        if (this.loaded) {
+            var dx = this.viewport.pos().x();
+            var dy = this.viewport.pos().y();
+            var vw = this.viewport.width() - dx;
+            var vh = this.viewport.height() - dy;
+            var repetition = this.repetitions[this.repeat()];
+            var p = this.canvas.context.createPattern(this._image, repetition);
+            this.canvas.context.fillStyle = p;
+            this.canvas.context.fillRect(0, 0, vw, vh);
+        }
+    }
+    
 })
 
 var AnimatedImage = Graphics.extend({

@@ -3,6 +3,7 @@
 <head>
 <title>Keyboard | Mangame</title>
 <link rel="stylesheet" type="text/css" href="css/examples.css" />
+<script type="text/javascript" src="js/util.js"></script>
 <script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
 var SceneTest = Scene2D.extend({
@@ -11,9 +12,7 @@ var SceneTest = Scene2D.extend({
         this._super(game);
         var self = this;
 
-        this.hero = new Rectangle(game.canvas, 270, 150, 40, 40, 10);
-        this.hero.stroke.color("black");
-        this.hero.fill.color("yellow");
+        this.hero = createTopDownChar(game, 270, 150)
 
         this.description = new Text(game.canvas, game.canvas.width() / 2, game.canvas.height() - 50, "Use arrow keys to move the square");
         this.description.align("center");
@@ -26,8 +25,8 @@ var SceneTest = Scene2D.extend({
         this.walkingY = 0;
         this.speed = 5;
 
-        game.addEventListener(Keyboard.KEY_DOWN, function(e) { self.moveHero(e); });
-        game.addEventListener(Keyboard.KEY_UP, function(e) { self.stopHero(e); });
+        game.addEventListener(Keyboard.KEY_DOWN, function(e) { self.hero.move(e); });
+        game.addEventListener(Keyboard.KEY_UP, function(e) { self.hero.stop(e); });
         game.addEventListener(Keyboard.KEY_DOWN, function(e) {
                 self.keyLabel.value("Key is down: code " + e.originalEvent.keyCode);
             }
@@ -37,43 +36,9 @@ var SceneTest = Scene2D.extend({
         this.add(this.description);
         this.add(this.keyLabel);
     },
-
-    moveHero: function(e) {
-        switch (e.originalEvent.keyCode) {
-        case 37:
-            this.walkingX = -1;
-            break;
-        case 38:
-            this.walkingY = -1;
-            break;
-        case 39:
-            this.walkingX = 1;
-            break;
-        case 40:
-            this.walkingY = 1;
-            break;
-        }
-        if (this.walkingY != 0) {
-            e.originalEvent.preventDefault(); // prevent scroll
-        }
-    },
-
-    stopHero: function(e) {
-        switch (e.originalEvent.keyCode) {
-        case 38:
-        case 40:
-            this.walkingY = 0;
-            break;
-        case 37:
-        case 39:
-            this.walkingX = 0;
-            break;
-        }
-    },
-
-    _updateImpl: function(elapsedTime) {
-        this.hero.pos.x(this.hero.pos.x() + this.speed * this.walkingX);
-        this.hero.pos.y(this.hero.pos.y() + this.speed * this.walkingY);
+    
+    onUpdate: function(elapsedTime) {
+        this.hero.update(this.game.canvas.width(), this.game.canvas.height());
     }
 
 })

@@ -22,15 +22,14 @@ var SceneTest = Scene2D.extend({
         this.car = this.createCar(game.canvas, 0, 170);
         this.bar = this.createBar1(game.canvas, 480, 200);
         this.bar2 = this.createBar2(game.canvas, 120, 100);
-        this.button1 = this.createButton(game, 20, 350, {
-            'out' : 'Play',
-            'over' : 'Play!',
-            'pressed' : 'Played!',
-            'action': function() { self.started = !self.started; }
+        
+        this.button1 = new SimpleButton(game, 20, 420, {
+            label: 'Play',
+            action: function() { self.started = !self.started; }
         });
-        this.button2 = this.createButton(game, 130, 350, {
-            'out' : 'About',
-            'action': function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogerio A Lino Filho <http://rogeriolino.com>") }
+        this.button2 = new SimpleButton(game, 80, 420, {
+            label: 'About',
+            action: function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogerio A Lino Filho <http://rogeriolino.com>") }
         });
         
         this.add(this.title);
@@ -44,53 +43,6 @@ var SceneTest = Scene2D.extend({
         this.carDown = false;
     },
 
-    createButton: function(game, x, y, props) {
-        var outNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        out.fill.color("#f1f1f1");
-        out.stroke.color("#cccccc");
-
-        var outLabel = new Text(game.canvas, 50, 10, props['out']);
-        outLabel.color("#999999");
-        outLabel.align("center");
-
-        outNodes.add(out);
-        outNodes.add(outLabel);
-
-        var overNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        over.fill.color("#f1f1f1");
-        over.stroke.color("#cccccc");
-        over.shadow.color("#cccccc");
-        over.shadow.blur(10);
-        over.shadow.offsetX(1);
-        over.shadow.offsetY(1);
-
-        var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
-        overLabel.color("#cccccc");
-        overLabel.align("center");
-
-        overNodes.add(over);
-        overNodes.add(overLabel);
-
-        var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
-        pressedLabel.color("#cccccc");
-        pressedLabel.align("center");
-        pressedNodes.add(out);
-        pressedNodes.add(pressedLabel);
-
-        var btn = new Button(game, x, y,
-            {
-                'out' : outNodes,
-                'over' : overNodes,
-                'pressed' : pressedNodes,
-                'onrelease' : props['action']
-            }
-        );
-        return btn;
-    },
-
     createCar: function(canvas, x, y) {
         var car = new GraphicsGroup(canvas, x, y);
 
@@ -99,7 +51,7 @@ var SceneTest = Scene2D.extend({
         rect1.fill.color("yellow");
         car.add(rect1);
 
-        var avatar = new Image2D(canvas, 160, 20, "img/avatar.png");
+        var avatar = new Image2D(canvas, "img/avatar.png", 160, 20);
         avatar.angle(-20);
         car.add(avatar);
 
@@ -134,7 +86,7 @@ var SceneTest = Scene2D.extend({
         return bar;
     },
 
-    _updateImpl: function(elapsedTime) {
+    onUpdate: function(elapsedTime) {
         if (this.started) {
             var inc = 3;
             this.timer += elapsedTime;
@@ -146,18 +98,18 @@ var SceneTest = Scene2D.extend({
             if (this.bar2.angle() < 0) {
                 this.bar2.angle(360);
             }
-            this.car.pos.x(this.car.pos.x() + inc * 2);
-            if (this.car.pos.x() > this.game.canvas.width()) {
-                this.car.pos.x(-this.car.width());
+            this.car.pos().x(this.car.pos().x() + inc * 2);
+            if (this.car.pos().x() > this.game.canvas.width()) {
+                this.car.pos().x(-this.car.width());
             }
             if (this.timer > 50) {
                 if (!this.carDown) {
                     this.carDown = true;
-                    this.car.pos.y(this.car.pos.y() + inc);
+                    this.car.pos().y(this.car.pos().y() + inc);
                     this.timer = 0;
                 } else {
                     this.carDown = false;
-                    this.car.pos.y(this.car.pos.y() - inc);
+                    this.car.pos().y(this.car.pos().y() - inc);
                     this.timer = 0;
                 }
             }

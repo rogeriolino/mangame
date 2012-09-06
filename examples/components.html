@@ -11,79 +11,36 @@ var SceneTest = Scene2D.extend({
         this._super(game);
         var self = this;
         
-        this.label1 = new Text(game.canvas, 200, 60, "Username:");
-        this.inputText = new InputText(game, 200, 75, "username");
+        var fieldset = new GraphicsGroup(game.canvas, 220, 130);
+        
+        var label1 = new Text(game.canvas, 0, 0, "Username:");
+        this.inputText = new InputText(game, 0, 20, "username");
         this.inputText.width(210);
+        fieldset.add(label1);
+        fieldset.add(this.inputText);
         
-        this.label2 = new Text(game.canvas, 200, 120, "Password:");
-        this.inputPassword = new InputPassword(game, 200, 135, "password");
+        var label2 = new Text(game.canvas, 0, 70, "Password:");
+        this.inputPassword = new InputPassword(game, 0, 90, "password");
         this.inputPassword.width(210);
+        fieldset.add(label2);
+        fieldset.add(this.inputPassword);
         
-        this.button1 = this.createButton(game, 200, 180, {
-            'out' : 'Submit',
-            'action': function() { alert("Username: " + self.inputText.value() + "\nPassword: " + self.inputPassword.value()); }
+        this.button1 = new SimpleButton(game, 0, 140, {
+            label: 'Submit',
+            action: function() { alert("Username: " + self.inputText.value() + "\nPassword: " + self.inputPassword.value()); }
         });
-        this.button2 = this.createButton(game, 310, 180, {
-            'out' : 'Clear',
-            'action': function() { self.inputText.value(""); self.inputPassword.value(""); }
-        });
+        fieldset.add(this.button1);
         
-        this.add(this.label1);
-        this.add(this.inputText);
-        this.add(this.label2);
-        this.add(this.inputPassword);
-        this.add(this.button1);
-        this.add(this.button2);
-    },
-
-    createButton: function(game, x, y, props) {
-        var outNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var out = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        out.fill.color("#f1f1f1");
-        out.stroke.color("#cccccc");
-
-        var outLabel = new Text(game.canvas, 50, 10, props['out']);
-        outLabel.color("#999999");
-        outLabel.align("center");
-
-        outNodes.add(out);
-        outNodes.add(outLabel);
-
-        var overNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var over = new Rectangle(game.canvas, 0, 0, 100, 30, 5);
-        over.fill.color("#f1f1f1");
-        over.stroke.color("#cccccc");
-        over.shadow.color("#cccccc");
-        over.shadow.blur(10);
-        over.shadow.offsetX(1);
-        over.shadow.offsetY(1);
-
-        var overLabel = new Text(game.canvas, 50, 10, props['over'] || props['out']);
-        overLabel.color("#cccccc");
-        overLabel.align("center");
-
-        overNodes.add(over);
-        overNodes.add(overLabel);
-
-        var pressedNodes = new GraphicsGroup(game.canvas, 0, 0);
-        var pressedLabel = new Text(game.canvas, 50, 10, props['pressed'] || props['out']);
-        pressedLabel.color("#cccccc");
-        pressedLabel.align("center");
-        pressedNodes.add(out);
-        pressedNodes.add(pressedLabel);
-
-        var btn = new Button(game, x, y,
-            {
-                'out' : outNodes,
-                'over' : overNodes,
-                'pressed' : pressedNodes,
-                'onrelease' : props['action']
-            }
-        );
-        return btn;
+        this.button2 = new SimpleButton(game, this.button1.width() + 10, 140, {
+            label: 'Clear',
+            action: function() { self.inputText.value(""); self.inputPassword.value(""); }
+        });
+        fieldset.add(this.button2);
+        
+        this.add(fieldset);
     },
     
-    _updateImpl: function(elapsedTime) {
+    onUpdate: function(elapsedTime) {
     }
 
 })
