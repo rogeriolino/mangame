@@ -1052,7 +1052,7 @@ Image2D.Cache = {
     _onload: function(image, load) {
         if (typeof(load) == 'function') {
             if (image.loaded) {
-                load();
+                setTimeout(load, 10);
             } else {
                 image.addEventListener("load", load, false);
             }
