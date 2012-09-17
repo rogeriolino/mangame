@@ -4,8 +4,8 @@
 
 function createTopDownChar(game, x, y) {
     var chr = new Rectangle(game.canvas, x, y, 40, 40, 10);
-    chr.stroke.color("black");
-    chr.fill.color("yellow");
+    chr.stroke().color("black");
+    chr.fill().color("yellow");
     chr.walkingX = 0;
     chr.walkingY = 0;
     chr.speed = 5;

@@ -5,8 +5,8 @@
 var Mangame = {
     name: "mangame",
     filename: "mangame.js",
-    version: "0.2.0",
-    dev: false
+    version: "0.2.1",
+    dev: true
 };
 var scripts = document.getElementsByTagName('script');
 Mangame.script = scripts[scripts.length - 1];
@@ -39,23 +39,95 @@ Mangame.path = Mangame.script.src.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
         Class.prototype = prototype;
         Class.constructor = Class;
         Class.extend = arguments.callee;
+        Class.prototype.createProperty = function(name, defaultValue) {
+            this['_' + name] = defaultValue;
+            this[name] = (function() {
+                if (arguments.length) {
+                    this['_' + name] = arguments[0];
+                    return this;
+                }
+                return this['_' + name];
+            });
+        }
+        Class.prototype.set = function(prop) {
+            prop = (prop instanceof Object) ? prop : {};
+            for (var i in prop) {
+                if (this[i]) {
+                    if (typeof(this[i]) == 'function') {
+                        this[i](prop[i]);
+                    } else {
+                        this[i] = prop[i];
+                    }
+                }
+            }
+        }
         return Class;
     };
 })();
 
+
+// javascript ext
+Array.prototype.random = function() {
+    var i = Math.floor(Math.random() * this.length);
+    return this[i];
+};
+
+Array.prototype.remove = function() {
+    if (arguments.length > 0) {
+        if (arguments[0] instanceof Object) {
+            this.removeObject(arguments[0]);
+        } else {
+            if (arguments.length == 2) {
+                this.removeIndex(arguments[0], arguments[1]);
+            } else {
+                this.removeIndex(arguments[0]);
+            }
+        }
+    }
+}
+
+// Array Remove - By John Resig (MIT Licensed)
+Array.prototype.removeIndex = function(from, to) {
+  var rest = this.slice((to || from) + 1 || this.length);
+  this.length = from < 0 ? this.length + from : from;
+  return this.push.apply(this, rest);
+};
+
+Array.prototype.removeObject = function(obj) {
+    var v;
+    var newArr = [];
+    while (v = this.shift()) {
+        if (v != obj) {
+            newArr.push(v);
+        }
+    }
+    this.push.apply(this, newArr);
+};
+
 var Canvas = Class.extend({
+    
+    defaultWidth: 800,
+    defaultHeight: 500,
 
     init: function(node) {
         if (typeof(node) == "string") {
             this._canvas = document.getElementById(node);
             if (this._canvas == null) {
-                throw "Invalid tag canvas id: " + node;
+                throw "Invalid canvas tag id: " + node;
             }
-        } else if (node instanceof HTMLElement) {
+        } else if (node instanceof HTMLCanvasElement) {
             this._canvas = node;
+        } else {
+            throw "Invalid canvas constructor parameter. The parameter must be a canvas element";
         }
         if (this._canvas.getContext) {
             this.context = this._canvas.getContext("2d");
+            if (!this._canvas.getAttribute('width')) {
+                this._canvas.width = this.defaultWidth;
+            }
+            if (!this._canvas.getAttribute('height')) {
+                this._canvas.height = this.defaultHeight;
+            }
         } else {
             throw "Your browser doesn't support canvas";
         }
@@ -95,6 +167,10 @@ var Canvas = Class.extend({
     isOver: function(x, y) {
         var absPos = this.absolutePosition();
         return (x >= absPos.x() && x <= absPos.x() + this.width()) && (y >= absPos.y() && y <= absPos.y() + this.height());
+    },
+    
+    toImage: function() {
+        return new Image2D(this, this._canvas.toDataURL(), 0, 0);
     }
 
 });
@@ -102,27 +178,14 @@ var Canvas = Class.extend({
 var Point = Class.extend({
     
     init: function(x, y) {
-        this.set(x, y);
-    },
-    
-    set: function(x, y) {
-        this.x(x || 0);
-        this.y(y || 0);
-    },
-    
-    x: function(x) {
-        if (arguments.length) {
-            this._x = x;
+        this.createProperty('x', 0);
+        this.createProperty('y', 0);
+        if (arguments.length == 2) {
+            this.x(x);
+            this.y(y);
+        } else if (arguments[0] instanceof Object) {
+            this.set(arguments[0]);
         }
-        return this._x;
-        
-    },
-    
-    y: function(y) {
-        if (arguments.length) {
-            this._y = y;
-        }
-        return this._y;
     },
     
     clone: function(p) {
@@ -142,43 +205,11 @@ var Point = Class.extend({
 var Shadow = Class.extend({
     
     init: function(prop) {
+        this.createProperty('color', "#000");
+        this.createProperty('offsetX', 0);
+        this.createProperty('offsetY', 0);
+        this.createProperty('blur', 0);
         this.set(prop);
-    },
-    
-    set: function(prop) {
-        prop = prop || {};
-        this.color(prop.color || "#000");
-        this.offsetX(prop.offsetX || 0);
-        this.offsetY(prop.offsetY || 0);
-        this.blur(prop.blur || 0);
-    },
-    
-    color: function(c) {
-        if (arguments.length) {
-            this._color = c;
-        }
-        return this._color;
-    },
-    
-    offsetX: function(x) {
-        if (arguments.length) {
-            this._offsetX = x;
-        }
-        return this._offsetX;
-    },
-    
-    offsetY: function(y) {
-        if (arguments.length) {
-            this._offsetY = y;
-        }
-        return this._offsetY;
-    },
-    
-    blur: function(b) {
-        if (arguments.length) {
-            this._blur = b;
-        }
-        return this._blur;
     }
     
 });
@@ -186,102 +217,45 @@ var Shadow = Class.extend({
 var Fill = Class.extend({
     
     init: function(prop) {
-        this.set(prop)
-    },
-    
-    set: function(prop) {
-        prop = prop || {};
-        this.color(prop.color || "#fff");
-        this.alpha(prop.alpha || 1);
-        this.visible(prop.visible || true);
-    },
-    
-    color: function(c) {
-        if (arguments.length) {
-            this._color = c;
-        }
-        return this._color;
-    },
-    
-    alpha: function(a) {
-        if (arguments.length) {
-            this._alpha = a;
-        }
-        return this._alpha;
-    },
-    
-    visible: function(v) {
-        if (arguments.length) {
-            this._visible = v;
-        }
-        return this._visible;
+        this.createProperty('color', "#fff");
+        this.createProperty('alpha', 1);
+        this.createProperty('visible', true);
+        this.set(prop);
     }
+    
 });
 
 var Stroke = Class.extend({
     
     init: function(prop) {
+        this.createProperty('blur', 0);
+        this.createProperty('size', 1);
+        this.createProperty('color', "#000");
+        this.createProperty('alpha', 1);
+        this.createProperty('visible', true);
         this.set(prop);
-    },
-    
-    set: function(prop) {
-        prop = prop || {};
-        this.size(prop.size || 1);
-        this.color(prop.color || "#000");
-        this.alpha(prop.alpha || 1);
-        this.visible(prop.visible || true);
-    },
-    
-    size: function(s) {
-        if (arguments.length) {
-            this._size = s;
-        }
-        return this._size;
-    },
-    
-    color: function(c) {
-        if (arguments.length) {
-            this._color = c;
-        }
-        return this._color;
-    },
-    
-    alpha: function(a) {
-        if (arguments.length) {
-            this._alpha = a;
-        }
-        return this._alpha;
-    },
-    
-    visible: function(v) {
-        if (arguments.length) {
-            this._visible = v;
-        }
-        return this._visible;
     }
+    
 });
 
 var CanvasNode = Class.extend({
 
     init: function(canvas, x, y) {
         this.canvas = canvas;
-        this.width(0);
-        this.height(0);
-        this.angle(0);
-        this.pos(x, y);
-        this.shadow = new Shadow();
-        this.binds = {};
+        this.createProperty('width', 0);
+        this.createProperty('height', 0);
+        this.createProperty('angle', 0);
+        this.createProperty('pos', new Point(x, y));
+        this.createProperty('shadow', new Shadow());
+        this.visible(true);
     },
     
-    pos: function() {
+    visible: function() {
         if (arguments.length) {
-            if (arguments[0] instanceof Point) {
-                this._pos = arguments[0];
-            } else {
-                this._pos = new Point(arguments[0], arguments[1]);
-            }
+            this._visible = arguments[0];
+            return this;
         }
-        return this._pos;
+        return this._visible && (this.parent() ? this.parent().visible() : true);
     },
     
     /* position relative to canvas, and not to parent */
@@ -295,20 +269,6 @@ var CanvasNode = Class.extend({
             node = node.parent();
         } while (node);
         return new Point(x, y);
-    },
-
-    width: function(w) {
-        if (arguments.length) {
-            this._width = w;
-        }
-        return this._width;
-    },
-
-    height: function(h) {
-        if (arguments.length) {
-            this._height = h;
-        }
-        return this._height;
     },
     
     left: function() {
@@ -330,13 +290,6 @@ var CanvasNode = Class.extend({
     center: function() {
         return new Point(this.pos().x() + this.width() / 2, this.pos().y() + this.height() / 2);
     },
-    
-    angle: function(a) {
-        if (arguments.length) {
-            this._angle = a;
-        }
-        return this._angle;
-    },
 
     rotate: function() {
         if (this.angle != 0) {
@@ -345,35 +298,16 @@ var CanvasNode = Class.extend({
         }
     },
     
-    bind: function(prop, fn) {
-        if (typeof(fn) == 'function') {
-            this.binds[prop] = fn;
-        }
-    },
-    
     parent: function(node) {
         if (arguments.length) {
             if (node instanceof CanvasNode) {
                 this._parent = node;
+                return this;
             } else {
                 throw "Invalid parent: must be a CanvasNode instance, given " + ((node) ? node.constructor : node);
             }
         }
         return this._parent;
-    },
-    
-    execBinds: function() {
-        if (this.binds.x) {
-            this.pos().x(this.binds.x());
-        }
-        if (this.binds.y) {
-            this.pos().y(this.binds.y());
-        }
-        for (var i in this.binds) {
-            if (typeof(this[i]) == 'function') {
-                this[i](this.binds[i]());
-            }
-        }
     }
 
 })
@@ -385,14 +319,43 @@ var CanvasNodeGroup = CanvasNode.extend({
         this.clear();
     },
 
+    _updateWidth: function(child) {
+        var maxWidth = this.width();
+        var right = child.right();
+        maxWidth = (right > maxWidth) ? right : maxWidth;
+        this.width(maxWidth);
+    },
+
+    _updateHeight: function(child) { 
+        var maxHeight = this.height();
+        var bottom = child.bottom();
+        maxHeight = (bottom > maxHeight) ? bottom : maxHeight;
+        this.height(maxHeight);
+    },
+
     add: function(child) {
-        if (child instanceof CanvasNode) {
-            child.canvas = this.canvas;
-            child.parent(this);
-            this.childs.push(child);
+        if (child instanceof Array) {
+            for (var i = 0; i < child.length; i++) {
+                this.add(child[i]);
+            }
         } else {
-            throw "Invalid child: must be a CanvasNode instance, given " + ((child) ? child.constructor : child);
+            if (child instanceof CanvasNode) {
+                child.canvas = this.canvas;
+                child.parent(this);
+                this.childs.push(child);
+                this._updateWidth(child);
+                this._updateHeight(child);
+                if (this.postAdd) {
+                    this.postAdd(child);
+                }
+            } else {
+                throw "Invalid child: must be a CanvasNode instance, given " + ((child) ? child.constructor : child);
+            }
         }
+    },
+
+    remove: function(child) {
+        this.childs.remove(child);
     },
 
     clear: function() {
@@ -405,37 +368,6 @@ var GraphicsGroup = CanvasNodeGroup.extend({
 
     init: function(canvas, x, y) {
         this._super(canvas, x, y);
-        this.visible = true;
-    },
-
-    /**
-     * Readonly
-     */
-    width: function() {
-        var maxWidth = 0;
-        if (this.childs) {
-            for (var i = 0; i < this.childs.length; i++) {
-                var child = this.childs[i];
-                var right = child.right();
-                maxWidth = (right > maxWidth) ? right : maxWidth;
-            }
-        }
-        return maxWidth;
-    },
-
-    /**
-     * Readonly
-     */
-    height: function() { 
-        var maxHeight = 0;
-        if (this.childs) {
-            for (var i = 0; i < this.childs.length; i++) {
-                var child = this.childs[i];
-                var bottom = child.bottom();
-                maxHeight = (bottom > maxHeight) ? bottom : maxHeight;
-            }
-        }
-        return maxHeight;
     },
 
     update: function(elapsedTime) {
@@ -443,11 +375,13 @@ var GraphicsGroup = CanvasNodeGroup.extend({
             var child = this.childs[i];
             child.update(elapsedTime);
         }
-        this.execBinds();
+        if (this.onUpdate) {
+            this.onUpdate(elapsedTime);
+        }
     },
 
     draw: function() {
-        if (this.visible) {
+        if (this.visible()) {
             this.canvas.context.save();
             this.canvas.context.translate(this.pos().x(), this.pos().y());
             this.rotate();
@@ -477,37 +411,38 @@ var Graphics = CanvasNode.extend({
 
     init: function(canvas, x, y) {
         this._super(canvas, x, y);
-        this.visible = true;
-        this.fill = new Fill();
-        this.stroke = new Stroke();
+        this.createProperty('fill', new Fill());
+        this.createProperty('stroke', new Stroke());
     },
 
     update: function(elapsedTime) { 
-        this.execBinds(); 
     },
 
     draw: function() {
-        if (this.visible) {
+        if (this.visible()) {
             this.canvas.context.beginPath();
             this.canvas.context.save();
             this.canvas.context.translate(this.pos().x(), this.pos().y());
             this.rotate();
-            if (this.shadow && this.shadow.blur() > 0) {
-                this.canvas.context.shadowOffsetX = this.shadow.offsetX();
-                this.canvas.context.shadowOffsetY = this.shadow.offsetY();
-                this.canvas.context.shadowBlur = this.shadow.blur();
-                this.canvas.context.shadowColor = this.shadow.color();
+            var shadow = this.shadow();
+            if (shadow.blur() > 0) {
+                this.canvas.context.shadowOffsetX = shadow.offsetX();
+                this.canvas.context.shadowOffsetY = shadow.offsetY();
+                this.canvas.context.shadowBlur = shadow.blur();
+                this.canvas.context.shadowColor = shadow.color();
             }
             this._drawImpl();
-            if (this.fill && this.fill.visible()) {
-                this.canvas.context.globalAlpha = this.fill.alpha();
-                this.canvas.context.fillStyle = this.fill.color();
+            var fill = this.fill();
+            if (fill.visible()) {
+                this.canvas.context.globalAlpha = fill.alpha();
+                this.canvas.context.fillStyle = fill.color();
                 this.canvas.context.fill();
             }
-            if (this.stroke && this.stroke.visible()) {
-                this.canvas.context.globalAlpha = this.fill.alpha();
-                this.canvas.context.strokeStyle = this.stroke.color();
-                this.canvas.context.lineWidth = this.stroke.size();
+            var stroke = this.stroke();
+            if (stroke.visible()) {
+                this.canvas.context.globalAlpha = fill.alpha();
+                this.canvas.context.strokeStyle = stroke.color();
+                this.canvas.context.lineWidth = stroke.size();
                 this.canvas.context.stroke();
             }
             this.canvas.context.restore();
@@ -529,18 +464,45 @@ var Scene = GraphicsGroup.extend({
     init: function(game) {
         this._super(game.canvas, 0, 0);
         this.game = game;
+        this.started = false;
     },
 
     updateScene: function(elapsedTime) {
-        this.update(elapsedTime);
-        this.onUpdate(elapsedTime);
+        if (this.started) {
+            this.update(elapsedTime);
+            if (this.onUpdate) {
+                this.onUpdate(elapsedTime);
+            }
+        }
     },
-
-    onUpdate: function(elapsedTime) {}
+    
+    start: function() {
+        this.started = true;
+        this.visible(true);
+        if (this.onStart) {
+            this.onStart();
+        }
+    },
+    
+    stop: function() {
+        this.started = false;
+        this.visible(false);
+        if (this.onStop) {
+            this.onStop();
+        }
+    }
 
 })
 
 var Scene2D = Scene.extend({
+
+    init: function(game) {
+        this._super(game);
+    }
+
+})
+
+var SceneMenu = Scene2D.extend({
 
     init: function(game) {
         this._super(game);
@@ -585,15 +547,20 @@ var JsLoader = Loader.extend({
     
 });
 
-var Game = Graphics.extend({
+var Game = Class.extend({
     
     init: function(canvas, props) {
         props = props || {};
-        this.onLoad = props.onLoad || function() {};
-        this.canvas = canvas;
+        this.onLoad = props.onLoad || props.load || function() {};
+        if (canvas instanceof Canvas) {
+            this.canvas = canvas;
+        } else {
+            this.canvas = new Canvas(canvas);
+        }
         this.scenes = [];
         this.running = false;
         this.currentScene = null;
+        this.currentSceneIndex = 0;
         this.maxFps = 60;
         this.fps = 0;
         this.currentFps = 0;
@@ -648,14 +615,79 @@ var Game = Graphics.extend({
     },
 
     addScene: function(scene) {
-        if (scene instanceof Scene) {
-            if (this.scenes.length == 0) {
-                this.currentScene = scene;
+        if (scene instanceof Array) {
+            for (var i = 0; i < scene.length; i++) {
+                this.addScene(scene[i]);
             }
-            this.scenes.push(scene);
         } else {
-            throw "Invalid scene: must be a Scene instance, given " + scene.constructor;
+            if (scene instanceof Scene) {
+                if (this.scenes.length == 0) {
+                    this.currentScene = scene;
+                }
+                scene.visible(false);
+                this.scenes.push(scene);
+            } else {
+                throw "Invalid scene: must be a Scene instance, given " + scene.constructor;
+            }
         }
+        return this;
+    },
+    
+    gotoScene: function(prop) {
+        var self = this;
+        if (self.inTransition == true) {
+            return;
+        }
+        if (prop instanceof Object) {
+            prop.index = (prop.index != undefined) ? prop.index : this.currentSceneIndex;
+        } else {
+            prop = {index: parseInt(prop)};
+        }
+        if (prop.index < 0 || prop.index >= this.scenes.length) {
+            throw "Invalid scene index: " + prop.index;
+        }
+        var changeScene = function() {
+            if (self.running) {
+                self.currentScene.stop();
+            }
+            self.currentSceneIndex = prop.index;
+            self.currentScene = self.scenes[prop.index];
+            if (self.running) {
+                self.currentScene.start();
+            }
+            if (prop.complete) {
+                prop.complete();
+            }
+            self.inTransition = false;
+        }
+        if (prop.transition) {
+            self.inTransition = true;
+            var transition = new SceneTransition(self);
+            transition.transition(self.currentScene, self.scenes[prop.index], prop.transition, prop.effect, prop.duration, changeScene);
+        } else {
+            changeScene();
+        }
+        return this;
+    },
+    
+    nextScene: function(prop) {
+        prop = prop || {};
+        this.currentSceneIndex++;
+        if (this.currentSceneIndex >= this.scenes.length) {
+            this.currentSceneIndex = 0;
+        }
+        prop.index = this.currentSceneIndex;
+        this.gotoScene(prop);
+    },
+    
+    prevScene: function(prop) {
+        prop = prop || {};
+        this.currentSceneIndex--;
+        if (this.currentSceneIndex < 0) {
+            this.currentSceneIndex = this.scenes.length - 1;
+        }
+        prop.index = this.currentSceneIndex;
+        this.gotoScene(prop);
     },
     
     addEventListener: function(eventName, fn) {
@@ -664,15 +696,15 @@ var Game = Graphics.extend({
             function(e) {
                 if (typeof(fn) == 'function') {
                     // prevent mouse event (click) on rollout
-                    if ((eventName == Mouse.MOUSE_DOWN || eventName == Mouse.MOUSE_UP)&& !self.canvas.isOver(e.clientX, e.clientY)) {
+                    if ((eventName == Mouse.MOUSE_DOWN || eventName == Mouse.MOUSE_UP) && !self.canvas.isOver(e.clientX, e.clientY)) {
                         return;
                     }
-                    var event = new GameEvent({canvas: self.canvas, name: eventName, originalEvent: e});
-                    fn(event);
+                    fn(new GameEvent({canvas: self.canvas, name: eventName, originalEvent: e}));
                 }
             }, 
             false
         );
+        return this;
     },
     
     getRequestAnimFrame: function() {
@@ -683,28 +715,31 @@ var Game = Graphics.extend({
                 window.mozRequestAnimationFrame    || 
                 window.oRequestAnimationFrame      || 
                 window.msRequestAnimationFrame     || 
-                function(/* function */ callback, /* DOMElement */ element){
+                function(/* function */ callback, /* DOMElement */ element) {
                     window.setTimeout(callback, 1000 / game.maxFps);
                 };
     },
 
     play: function() {
-        var game = this;
-        if (!game.running) {
-            game.run();
+        if (!this.running) {
+            this._run();
+            if (this.currentScene) {
+                this.currentScene.start();
+            }
         }
-        game.running = true;
+        this.running = true;
+        this.startTime = (new Date()).getTime();
     },
 
-    run: function() {
-        var startTime = (new Date()).getTime();
-        
-        this.currentScene.updateScene(this.elapsedTime);
-        this.canvas.clear();
-        this.currentScene.draw();
+    _run: function() {
+        if (this.currentScene) {
+            this.currentScene.updateScene(this.elapsedTime);
+            this.canvas.clear();
+            this.currentScene.draw();
+        }
 
         var endTime = (new Date()).getTime();
-
+        
         if (endTime - this.currentTime > 1000) {
             this.currentTime = endTime;
             this.currentFps = this.fps;
@@ -713,7 +748,7 @@ var Game = Graphics.extend({
             this.fps++;
         }
 
-        this.elapsedTime = endTime - startTime;
+        this.elapsedTime = endTime - this.startTime;
 
         if (this.showFps) {
             var text = new Text(this.canvas, 10, 10, "fps: " + this.currentFps);
@@ -723,10 +758,132 @@ var Game = Graphics.extend({
         // loop
         var game = this;
         var raf = game.getRequestAnimFrame();
-        raf(function() {game.run()});
+        this.startTime = (new Date()).getTime();
+        raf(function() {game._run()});
     }
 
 })
+
+var SceneTransition = Class.extend({
+    
+    init: function(game) {
+        this.game = game;
+        if (typeof(Tween) == "undefined") {
+            throw "Tween package not loaded";
+        }
+    },
+    
+    transition: function(from, to, transition, effect, duration, complete, change) {
+        if (this[transition]) {
+            this[transition](from, to, effect, duration, complete, change);
+        }
+    },
+    
+    fade: function(from, to, effect, duration, complete, change) {
+        var self = this;
+        duration = duration || 1;
+        var rect = new Rectangle(self.game.canvas, 0, 0, self.game.canvas.width(), self.game.canvas.height());
+        rect.fill().color("#000");
+        rect.fill().alpha(30);
+        rect.stroke().size(0);
+        from.add(rect);
+        // alpha 0 to 100
+        var updateAlpha = function(event) {
+            var value = event.target._pos;
+            rect.fill().alpha(value / 100);
+            if (change) {
+               change(value);
+            }
+        };
+        var tweenIn = new Tween(effect, 0, 100, duration / 2);
+        tweenIn.onMotionChanged = updateAlpha;
+        tweenIn.onMotionFinished = function(event) {
+            var tweenOut = new Tween(effect, 100, 0, duration / 2);
+            tweenOut.onMotionChanged = updateAlpha;
+            tweenOut.onMotionFinished = function(event) {
+                to.remove(rect);
+            };
+            from.remove(rect);
+            to.add(rect);
+            tweenOut.start();
+            if (complete) {
+                complete();
+            }
+        };
+        tweenIn.start();
+    },
+    
+    _slideX: function(from, to, effect, duration, complete, change, dir) {
+        var self = this;
+        duration = duration || .5;
+        var width = this.game.canvas.width();
+        var xini = -(width * dir);
+        var image = this.game.canvas.toImage();
+        this.game.currentScene = to;
+        this.game.currentScene.add(image);
+        this.game.currentScene.pos().x(xini);
+        image.pos().x(-xini);
+        var tween = new Tween(effect, 0, width, duration);
+        tween.onMotionChanged = function(event) {
+            var value = event.target._pos;
+            self.game.currentScene.pos().x(xini + value * dir);
+            if (change) {
+                change(value);
+            }
+        }
+        tween.onMotionFinished = function(event) {
+            self.game.currentScene.remove(image);
+            if (complete) {
+                complete();
+            }
+        };
+        tween.start();
+    },
+    
+    slideLeft: function(from, to, effect, duration, complete, change) {
+        this._slideX(from, to, effect, duration, complete, change, -1);
+    },
+    
+    slideRight: function(from, to, effect, duration, complete, change) {
+        this._slideX(from, to, effect, duration, complete, change, 1);
+    },
+    
+    _slideY: function(from, to, effect, duration, complete, change, dir) {
+        var self = this;
+        duration = duration || .5;
+        var height = this.game.canvas.height();
+        var yini = -(height * dir);
+        var image = this.game.canvas.toImage();
+        this.game.currentScene = to;
+        this.game.currentScene.add(image);
+        this.game.currentScene.pos().y(yini);
+        image.pos().y(-yini);
+        var tween = new Tween(effect, 0, height, duration);
+        tween.onMotionChanged = function(event) {
+            var value = event.target._pos;
+            self.game.currentScene.pos().y(yini + value * dir);
+            if (change) {
+                change(value);
+            }
+        }
+        tween.onMotionFinished = function(event) {
+            self.game.currentScene.remove(image);
+            if (complete) {
+                complete();
+            }
+        };
+        tween.start();
+    },
+    
+    slideTop: function(from, to, effect, duration, complete, change) {
+        this._slideY(from, to, effect, duration, complete, change, -1);
+    },
+    
+    slideBottom: function(from, to, effect, duration, complete, change) {
+        this._slideY(from, to, effect, duration, complete, change, 1);
+    }
+    
+});
 
 var GameEvent = Class.extend({
     
@@ -761,34 +918,9 @@ var GameEvent = Class.extend({
 var Viewport = Class.extend({
 
     init: function(x, y, w, h) {
-        this.pos(x, y);
-        this.width(w || 0);
-        this.height(h || 0);
-    },
-    
-    pos: function() {
-        if (arguments.length) {
-            if (arguments[0] instanceof Point) {
-                this._pos = arguments[0];
-            } else {
-                this._pos = new Point(arguments[0], arguments[1]);
-            }
-        }
-        return this._pos;
-    },
-    
-    width: function(w) {
-        if (arguments.length) {
-            this._width = w;
-        }
-        return this._width;
-    },
-    
-    height: function(h) {
-        if (arguments.length) {
-            this._height = h;
-        }
-        return this._height;
+        this.createProperty('pos', new Point());
+        this.createProperty('width', 0);
+        this.createProperty('height', 0);
     },
     
     contains: function(pos) {
@@ -850,19 +982,8 @@ var Mouse = GameIO.extend({
     init: function(game) {
         var self = this;
         this._super(game);
-        this.pos(0, 0);
+        this.createProperty('pos', new Point());
         this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {self.updatePos(e.pos)});
-    },
-    
-    pos: function() {
-        if (arguments.length) {
-            if (arguments[0] instanceof Point) {
-                this._pos = arguments[0];
-            } else {
-                this._pos = new Point(arguments[0], arguments[1]);
-            }
-        }
-        return this._pos;
     },
     
     isMouseEvent: function(e) {
@@ -892,67 +1013,13 @@ var Text = Graphics.extend({
 
     init: function(canvas, x, y, value) {
         this._super(canvas, x, y);
-        this.set({value: value});
-    },
-    
-    set: function(prop) {
-        prop = prop || {};
-        this.value(prop.value || "");
-        this.size(prop.size || 12);
-        this.font(prop.font || "sans-serif");
-        this.color(prop.color || "#000");
-        this.bold(prop.bold || false);
-        this.baseline(prop.baseline || "top");
-        this.align(prop.align || "start");
-    },
-    
-    value: function(v) {
-        if (arguments.length) {
-            this._value = v;
-        }
-        return this._value;
-    },
-    
-    size: function(s) {
-        if (arguments.length) {
-            this._size = s;
-        }
-        return this._size;
-    },
-    
-    font: function(f) {
-        if (arguments.length) {
-            this._font = f;
-        }
-        return this._font;
-    },
-    
-    color: function(c) {
-        if (arguments.length) {
-            this._color = c;
-        }
-        return this._color;
-    },
-    
-    bold: function(b) {
-        if (arguments.length) {
-            this._bold = b;
-        }
-        return this._bold;
-    },
-    
-    baseline: function(b) {
-        if (arguments.length) {
-            this._baseline = b;
-        }
-        return this._baseline;
-    },
-    
-    align: function(a) {
-        if (arguments.length) {
-            this._align = a;
-        }
-        return this._align;
+        this.createProperty('value', value || '');
+        this.createProperty('size', 12);
+        this.createProperty('font', 'sans-serif');
+        this.createProperty('color', '#000');
+        this.createProperty('bold', false);
+        this.createProperty('baseline', 'top');
+        this.createProperty('align', 'start');
     },
 
     _drawImpl: function() {
@@ -974,11 +1041,13 @@ var Image2D = Graphics.extend({
         this._super(canvas, x, y);
         this.loaded = false;
         var self = this;
-        this.viewport = new Viewport(0, 0, -1, -1);
+        this.viewport = new Viewport();
         var updateViewPort = function() {
             self.loaded = true;
-            self.viewport.width((self.viewport.width() < 0) ? self.width() : self.viewport.width());
-            self.viewport.height((self.viewport.height() < 0) ? self.height() : self.viewport.height());
+            self.width(self._image.width);
+            self.height(self._image.height);
+            self.viewport.width(self.width());
+            self.viewport.height(self.height());
             self.onLoad();
         }
         if (img instanceof Image) {
@@ -992,26 +1061,6 @@ var Image2D = Graphics.extend({
     },
     
     onLoad: function() {},
-
-    /**
-     * Readonly
-     */
-    width: function() {
-        if (this._image) {
-            return this._image.width;
-        }
-        return 0;
-    },
-
-    /**
-     * Readonly
-     */
-    height: function() {
-        if (this._image) {
-            return this._image.height;
-        }
-        return 0;
-    },
 
     clone: function() {
         var image = new Image2D(this.canvas, this.url, this.pos().x(), this.pos().y());
@@ -1051,16 +1100,16 @@ Image2D.Cache = {
     
     _onload: function(image, load) {
         if (typeof(load) == 'function') {
-            if (image.loaded) {
-                setTimeout(load, 10);
+            var fn = function() { image.loaded = true; load(); }
+            if (image.loaded || "data:" == image.src.substring(0, 5)) {
+                setTimeout(fn, 10);
             } else {
-                image.addEventListener("load", load, false);
+                image.addEventListener("load", fn, false);
             }
         }
     },
     
     put: function(url, image, load) {
-        image.addEventListener("load", function() { this.loaded = true; }, false);
         Image2D.Cache._onload(image, load);
         Image2D.Cache.images[url] = image;
     },
@@ -1144,7 +1193,6 @@ var AnimatedImage = Graphics.extend({
                 this.currentImage = this.images[this.currentFrame];
             }
         }
-        this.execBinds();
     },
     
     _drawImpl: function() {

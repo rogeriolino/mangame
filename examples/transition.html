@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Transition | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
+<script type="text/javascript" src="../src/mangame.js"></script>
+<script type="text/javascript">
+function createRect(canvas, color) {
+    var rect = new Rectangle(canvas, 0, 0, canvas.width(), canvas.height());
+    rect.fill().color(color);
+    rect.stroke().size(0);
+    return rect;
+}
+
+function createTitle(canvas, text) {
+    var size = 30;
+    var title = new Text(canvas, canvas.width() / 2, canvas.height() / 2 - size, text);
+    title.size(size);
+    title.align("center");
+    title.color("white");
+    return title;
+}
+
+function createDescription(canvas, text) {
+    var title = new Text(canvas, canvas.width() / 2, canvas.height() / 2, text);
+    title.size(12);
+    title.align("center");
+    title.color("black");
+    return title;
+}
+
+function createBtnNext(game) {
+    return new SimpleButton(game, game.canvas.width() - 170, game.canvas.height() - 50, {
+        label: 'Next Scene >',
+        action: function() { 
+            game.nextScene({
+                transition: ['slideLeft', 'slideTop', 'slideBottom', 'fade'].random(), 
+                effect: 'linear'
+            });
+        }
+    })
+}
+
+function createBtnPrev(game) {
+    return new SimpleButton(game, 20, game.canvas.height() - 50, {
+        label: '< Prev Scene',
+        action: function() { 
+            game.prevScene({
+                transition: ['slideRight', 'slideTop', 'slideBottom', 'fade'].random(), 
+                effect: 'linear'
+            });
+        }
+    })
+}
+
+function createScenes(game) {
+    var colors = ['green', 'blue', 'red'];
+    var scenes = [];
+    var total = colors.length;
+    for (var i = 0; i < total; i++) {
+        var scene = new Scene2D(game);
+        scene.add(createRect(game.canvas, colors[i]));
+        scene.add(createTitle(game.canvas, "Scene " + (i + 1)));
+        scene.add(createDescription(game.canvas, "Scene transition example"));
+        if (i > 0) {
+            scene.add(createBtnPrev(game));
+        }
+        if (i < total - 1) {
+            scene.add(createBtnNext(game));
+        }
+        scenes.push(scene);
+    }
+    return scenes;
+}
+
+window.onload = function() {
+
+    try {
+        new Game(
+            "canvas", 
+            {
+                require: ['geom', 'ui', 'tween'],
+                load: function() {
+                    this.addScene(createScenes(this)); //.gotoScene(1); // bug
+                    this.showFps = true;
+                    this.play();
+                }
+            }
+        );
+    } catch (e) {
+        alert(e);
+    }
+    
+}
+</script>
+</head>
+<body>
+    <div id="example" class="transition">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Transitions example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Scene transitions example</p>
+            </div>
+        </div>
+    </div>
+</html>

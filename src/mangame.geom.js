@@ -7,20 +7,9 @@ var Line = Graphics.extend({
 
     init: function(canvas, x1, y1, x2, y2) {
         this._super(canvas, x1, y1);
-        this.pos2(x2 || this.x, y2 || this.y);
+        this.createProperty('pos2', new Point(x2 || this.x, y2 || this.y));
     },
     
-    pos2: function() {
-        if (arguments.length) {
-            if (arguments[0] instanceof Point) {
-                this._pos2 = arguments[0];
-            } else {
-                this._pos2 = new Point(arguments[0], arguments[1]);
-            }
-        }
-        return this._pos2;
-    },
-
     width: function() {
         if (this.pos && this.pos2) {
             return Math.abs(this.pos().x() - this.pos2().x());
@@ -37,7 +26,7 @@ var Line = Graphics.extend({
 
     _drawImpl: function() {
         this.canvas.context.moveTo(0, 0);
-        this.canvas.context.lineTo(this.pos2.x() - this.pos().x(), this.pos2.y() - this.pos().y());
+        this.canvas.context.lineTo(this.pos2().x() - this.pos().x(), this.pos2().y() - this.pos().y());
     }
 
 });
@@ -48,26 +37,27 @@ var Rectangle = Graphics.extend({
         this._super(canvas, x, y);
         this.width(width || 0);
         this.height(height || 0);
-        this.radius = radius || 0;
+        this.createProperty('radius', radius || 0);
     },
 
     _drawImpl: function() {
-        this.canvas.context.moveTo(0, this.radius);
-        this.canvas.context.lineTo(0, this.height() - this.radius);
-        if (this.radius > 0) {
-            this.canvas.context.quadraticCurveTo(0, this.height(), this.radius, this.height());
+        this.canvas.context.moveTo(0, this.radius());
+        this.canvas.context.lineTo(0, this.height() - this.radius());
+        var radius = this.radius();
+        if (radius > 0) {
+            this.canvas.context.quadraticCurveTo(0, this.height(), radius, this.height());
         }
-        this.canvas.context.lineTo(this.width() - this.radius, this.height());
-        if (this.radius > 0) {
-            this.canvas.context.quadraticCurveTo(this.width(), this.height(), this.width(), this.height() - this.radius);
+        this.canvas.context.lineTo(this.width() - radius, this.height());
+        if (radius > 0) {
+            this.canvas.context.quadraticCurveTo(this.width(), this.height(), this.width(), this.height() - radius);
         }
-        this.canvas.context.lineTo(this.width(), this.radius);
-        if (this.radius > 0) {
-            this.canvas.context.quadraticCurveTo(this.width(), 0, this.width() - this.radius, 0);
+        this.canvas.context.lineTo(this.width(), radius);
+        if (radius > 0) {
+            this.canvas.context.quadraticCurveTo(this.width(), 0, this.width() - radius, 0);
         }
-        this.canvas.context.lineTo(this.radius, 0);
-        if (this.radius > 0) {
-            this.canvas.context.quadraticCurveTo(0, 0, 0, this.radius);
+        this.canvas.context.lineTo(radius, 0);
+        if (radius > 0) {
+            this.canvas.context.quadraticCurveTo(0, 0, 0, radius);
         }
     }
 

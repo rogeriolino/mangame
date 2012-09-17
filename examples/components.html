@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
 <title>Components | Mangame</title>
 <link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
@@ -10,54 +11,91 @@ var SceneTest = Scene2D.extend({
     init: function(game) {
         this._super(game);
         var self = this;
-        
-        var fieldset = new GraphicsGroup(game.canvas, 220, 130);
-        
-        var label1 = new Text(game.canvas, 0, 0, "Username:");
-        this.inputText = new InputText(game, 0, 20, "username");
+
+        var loginBox = new GraphicsGroup(game.canvas, 220, 130);
+
+        loginBox.add(new Text(game.canvas, 0, 0, "Username:"));
+        this.inputText = new HtmlInputText(game, 0, 20, "username");
         this.inputText.width(210);
-        fieldset.add(label1);
-        fieldset.add(this.inputText);
-        
-        var label2 = new Text(game.canvas, 0, 70, "Password:");
-        this.inputPassword = new InputPassword(game, 0, 90, "password");
+        loginBox.add(this.inputText);
+
+        loginBox.add(new Text(game.canvas, 0, 70, "Password:"));
+        this.inputPassword = new HtmlInputPassword(game, 0, 90, "password");
         this.inputPassword.width(210);
-        fieldset.add(label2);
-        fieldset.add(this.inputPassword);
-        
+        loginBox.add(this.inputPassword);
+
         this.button1 = new SimpleButton(game, 0, 140, {
             label: 'Submit',
             action: function() { alert("Username: " + self.inputText.value() + "\nPassword: " + self.inputPassword.value()); }
         });
-        fieldset.add(this.button1);
-        
+        loginBox.add(this.button1);
+
         this.button2 = new SimpleButton(game, this.button1.width() + 10, 140, {
             label: 'Clear',
             action: function() { self.inputText.value(""); self.inputPassword.value(""); }
         });
-        fieldset.add(this.button2);
-        
-        this.add(fieldset);
-    },
-    
-    onUpdate: function(elapsedTime) {
-    }
+        loginBox.add(this.button2);
 
-})
+        var x = 0;
+        var w = 30;
+        
+        var radioGroup = new GraphicsGroup(game.canvas, 50, 400);
+        radioGroup.add(new Text(game.canvas, 0, 0, "HTML Radio"));
+        var radioValue = new Text(game.canvas, 0, 50, "Value: ");
+        radioValue.color('red');
+        radioGroup.add(radioValue);
+        for (var i = 0; i < 5; i++) {
+            var radio = new HtmlRadio(game, x, 25, "option");
+            radio.value(i);
+            radio.on('click', function() { 
+                radioValue.value("Value: " + this.value)
+            });
+            radioGroup.add(radio);
+            x += w;
+        }
+
+        x = 0;
+        var checkGroup = new GraphicsGroup(game.canvas, 250, 400);
+        checkGroup.add(new Text(game.canvas, 0, 0, "HTML Checkbox"));
+        var checkValue = new Text(game.canvas, 0, 50, "Value: ");
+        checkValue.color('red');
+        checkGroup.add(checkValue);
+        var checks = [];
+        for (var i = 0; i < 5; i++) {
+            var check = new HtmlCheckbox(game, x, 25, "check-" + i);
+            check.value(i);
+            check.on('click', function() { 
+                var values = [];
+                for (var i = 0; i < checks.length; i++) {
+                    if (checks[i].tag().checked) {
+                        values.push(checks[i].value());
+                    }
+                }
+                checkValue.value("Values: " + values.join(', '))
+            });
+            checks.push(check);
+            x += w;
+        }
+        checkGroup.add(checks);
+        
+        this.add(loginBox);
+        this.add(radioGroup);
+        this.add(checkGroup);
+        this.add(new HtmlButton(game, 450, 400, "Html Button"));
+    }
+});
 
 window.onload = function() {
 
-    var canvas = new Canvas("canvas");
-
-    var game = new Game(canvas, {require: ['geom', 'ui']});
-    game.onLoad = function() {
-        game.showFps = true;
-
-        var scene = new SceneTest(game);
-        game.addScene(scene);
-
-        game.play();
-    }
+    var game = new Game(
+        "canvas", {
+            require: ['geom', 'ui'],
+            load: function() {
+                this.showFps = true;
+                this.addScene(new SceneTest(this));
+                this.play();
+            }
+    })
 
 }
 </script>
@@ -67,7 +105,7 @@ window.onload = function() {
         <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
         <h2>UI Components example</h2>
         <div class="canvas-frame">
-            <canvas id="canvas" width="640" height="480">
+            <canvas id="canvas">
                 <p>Your browser doesn't support HTML5 Canvas</p>
             </canvas>
             <div class="description">

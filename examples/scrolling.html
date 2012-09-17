@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
 <title>Scrolling | Mangame</title>
 <link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="js/util.js"></script>
@@ -20,7 +21,7 @@ window.onload = function() {
                 this._super(game);
                 var self = this;
                 
-                this.maxWidth = 800;
+                this.maxWidth = 900;
                 this.maxHeight = 600;
                 
                 this.bg = new Pattern(game.canvas, "img/grass.jpg");
@@ -37,7 +38,7 @@ window.onload = function() {
                 ];
                 for (var i = 0; i < 4; i++) {
                     var corner = new Rectangle(game.canvas, corners[i][0], corners[i][1], cornerSize, cornerSize);
-                    corner.fill.color("red");
+                    corner.fill().color("red");
                     this.add(corner);
                 }
                 
@@ -78,7 +79,7 @@ window.onload = function() {
         <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
         <h2>Scrolling example</h2>
         <div class="canvas-frame">
-            <canvas id="canvas" width="640" height="480">
+            <canvas id="canvas">
                 <p>Your browser doesn't support HTML5 Canvas</p>
             </canvas>
             <div class="description">

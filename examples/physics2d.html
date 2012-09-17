@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
 <title>Physics2D | Mangame</title>
 <link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
@@ -49,6 +50,25 @@ window.onload = function() {
                 
             },
             
+            addBrickListener: function(brick) {
+                this.listeners = this.listeners || [];
+                var self = this;
+                var bind = function() {
+                    brick.group.pos().x(brick.GetBody().GetPosition().x * WORLD_SCALE);
+                    brick.group.pos().y(brick.GetBody().GetPosition().y * WORLD_SCALE);
+                    brick.group.angle(brick.GetBody().GetAngle() * 180 / Math.PI);
+                    // remove brick out of canvas
+                    var x = brick.group.pos().x()
+                    var w = brick.group.width();
+                    if (x - w > self.game.canvas.width() || x + w < 0) {
+                        self.remove(brick.group);
+                        return false;
+                    }
+                    return true;
+                }
+                this.listeners.push(bind);
+            },
+            
             createBlock: function(bodyDef, fixDef, pos) {
                 var halfWidth = 73 / 2 / WORLD_SCALE;
                 var halfHeight = 73 / 2 / WORLD_SCALE;
@@ -69,6 +89,7 @@ window.onload = function() {
                 var y = brick.GetBody().GetPosition().y * WORLD_SCALE;
                 
                 brick.group = new GraphicsGroup(this.game.canvas, x, y);
+                this.addBrickListener(brick);
                 
 //                brick.rect = new Rectangle(this.game.canvas, -width/2, -height/2, width, height);
 //                brick.rect.fill.color("#ffffff");
@@ -76,21 +97,20 @@ window.onload = function() {
 //                brick.group.add(brick.rect);
                 
                 brick.img = new Image2D(this.game.canvas, "img/avatar.png", -width/2, -height/2);
+                brick.group.width(73)
                 brick.group.add(brick.img);
                 
-                brick.group.bind('x', function() {
-                    return brick.GetBody().GetPosition().x * WORLD_SCALE; 
-                });
-                brick.group.bind('y', function() {
-                    return brick.GetBody().GetPosition().y * WORLD_SCALE;
-                });
-                brick.group.bind('angle', function() {
-                    return brick.GetBody().GetAngle() * 180 / Math.PI;
-                });
+               
                 this.add(brick.group);
             },
             
             onUpdate: function(elapsedTime) {
+                this.listeners = this.listeners || [];
+                for (var i = 0; i < this.listeners.length; i++) {
+                    if (!this.listeners[i]()) {
+                        this.listeners.remove(i);
+                    }
+                }
                 this.world.Step(1 / 60, 10, 10);
                 this.world.ClearForces();
             }
@@ -114,7 +134,7 @@ window.onload = function() {
         <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
         <h2>Physics 2D example</h2>
         <div class="canvas-frame">
-            <canvas id="canvas" width="640" height="480">
+            <canvas id="canvas">
                 <p>Your browser doesn't support HTML5 Canvas</p>
             </canvas>
             <div class="description">

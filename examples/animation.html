@@ -1,43 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
 <title>Animation | Mangame</title>
 <link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
+var animStarted = false;
+var animSpeed = 2;
+
 var SceneTest = Scene2D.extend({
 
     init: function(game) {
         this._super(game);
 
         var self = this;
-        this.started = false;
-
         this.title = new Text(game.canvas, 200, 30, "HTML5 Canvas");
-        this.title.shadow.blur(15);
-        this.title.shadow.offsetX(1);
-        this.title.shadow.offsetY(1);
+        this.title.shadow().blur(15);
+        this.title.shadow().offsetX(1);
+        this.title.shadow().offsetY(1);
         this.title.size(30);
 
         this.car = this.createCar(game.canvas, 0, 170);
         this.bar = this.createBar1(game.canvas, 480, 200);
         this.bar2 = this.createBar2(game.canvas, 120, 100);
+        this.bar3 = this.createBar3(game.canvas, game.canvas.width() - 90, 30);
         
         this.button1 = new SimpleButton(game, 20, 420, {
             label: 'Play',
-            action: function() { self.started = !self.started; }
+            action: function() { animStarted = !animStarted; }
         });
         this.button2 = new SimpleButton(game, 80, 420, {
             label: 'About',
-            action: function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogerio A Lino Filho <http://rogeriolino.com>") }
+            action: function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogério Lino <http://rogeriolino.com>") }
         });
+        var x = 0, w = 30;
+        var radioGroup = new GraphicsGroup(game.canvas, 155, 415);
+        radioGroup.add(new Text(game.canvas, 0, 2, "Speed"));
+        for (var i = 0; i < 3; i++) {
+            var radio = new HtmlRadio(game, x, 20, "option");
+            radio.value(i + 1);
+            if (i == 0) {
+                radio.tag().checked = true;
+            }
+            radio.on('click', function() {
+                animSpeed = parseInt(this.value) * 2;
+            });
+            radioGroup.add(radio);
+            x += w;
+        }
         
         this.add(this.title);
         this.add(this.bar);
-        this.add(this.car);
         this.add(this.bar2);
+        this.add(this.bar3);
+        this.add(this.car);
         this.add(this.button1);
         this.add(this.button2);
+        this.add(radioGroup);
 
         this.timer = 0;
         this.carDown = false;
@@ -47,8 +67,8 @@ var SceneTest = Scene2D.extend({
         var car = new GraphicsGroup(canvas, x, y);
 
         var rect1 = new Rectangle(canvas, 160, 0, 100, 90, 20);
-        rect1.stroke.color("red");
-        rect1.fill.color("yellow");
+        rect1.stroke().color("red");
+        rect1.fill().color("yellow");
         car.add(rect1);
 
         var avatar = new Image2D(canvas, "img/avatar.png", 160, 20);
@@ -56,18 +76,35 @@ var SceneTest = Scene2D.extend({
         car.add(avatar);
 
         var rect2 = new Rectangle(canvas, 0, 80, 300, 50, 20);
-        rect2.stroke.color("red");
-        rect2.fill.color("yellow");
+        rect2.stroke().color("red");
+        rect2.fill().color("yellow");
         car.add(rect2);
 
-        var tire1 = new Circle(canvas, 60, 160, 40);
-        tire1.stroke.size(8);
-        car.add(tire1);
-
-        var tire2 = new Circle(canvas, 250, 160, 40);
-        tire2.stroke.size(8);
-        car.add(tire2);
-
+        function tire(canvas, x, y) {
+            var tire = new GraphicsGroup(canvas, x, y);
+            var circle = new Circle(canvas, 0, 0, 40);
+            circle.stroke().size(8);
+            tire.add(circle);
+            var line1 = new Line(canvas, 0, 0, 40, 10);
+            tire.add(line1);
+            return tire;
+        }
+        car.tire1 = tire(canvas, 60, 160);
+        car.add(car.tire1);
+        car.tire2 = tire(canvas, 250, 160)
+        car.add(car.tire2);
+        
+        car.onUpdate = function(elapsedTime) {
+            if (animStarted) {
+                var inc = 70 / (1000 / elapsedTime) * animSpeed;
+                var angle = car.tire1.angle() + inc;
+                car.tire1.angle(angle);
+                car.tire2.angle(angle);
+                if (angle > 360) {
+                    car.tire1.angle(angle - 360);
+                }
+            }
+        }
         return car;
     },
 
@@ -86,10 +123,14 @@ var SceneTest = Scene2D.extend({
         return bar;
     },
 
+    createBar3: function(canvas, x, y) {
+        var bar = new Rectangle(canvas, x, y, 50, 150);
+        return bar;
+    },
+
     onUpdate: function(elapsedTime) {
-        if (this.started) {
-            var inc = 3;
-            this.timer += elapsedTime;
+        if (animStarted) {
+            var inc = 25 / (1000 / elapsedTime) * animSpeed;
             this.bar.angle(this.bar.angle() + inc);
             if (this.bar.angle() >= 360) {
                 this.bar.angle(0);
@@ -98,18 +139,31 @@ var SceneTest = Scene2D.extend({
             if (this.bar2.angle() < 0) {
                 this.bar2.angle(360);
             }
+            this.bar3.dir = this.bar3.dir || 1;
+            var y = this.bar3.pos().y();
+            if (y < 30) {
+                this.bar3.dir = 1;
+                this.bar3.pos().y(30);
+            } else if (y > 300) {
+                this.bar3.dir = -1;
+                this.bar3.pos().y(300);
+            }
+            this.bar3.pos().y(y + inc * this.bar3.dir);
+            
             this.car.pos().x(this.car.pos().x() + inc * 2);
             if (this.car.pos().x() > this.game.canvas.width()) {
                 this.car.pos().x(-this.car.width());
             }
-            if (this.timer > 50) {
+            
+            this.timer += elapsedTime;
+            if (this.timer > 150) {
                 if (!this.carDown) {
                     this.carDown = true;
-                    this.car.pos().y(this.car.pos().y() + inc);
+                    this.car.pos().y(this.car.pos().y() + inc * 1.5);
                     this.timer = 0;
                 } else {
                     this.carDown = false;
-                    this.car.pos().y(this.car.pos().y() - inc);
+                    this.car.pos().y(this.car.pos().y() - inc * 1.5);
                     this.timer = 0;
                 }
             }
@@ -140,7 +194,7 @@ window.onload = function() {
         <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
         <h2>Animation example</h2>
         <div class="canvas-frame">
-            <canvas id="canvas" width="640" height="480">
+            <canvas id="canvas">
                 <p>Your browser doesn't support HTML5 Canvas</p>
             </canvas>
             <div class="description">
