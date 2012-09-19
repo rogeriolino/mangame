@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Sound | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
+<script type="text/javascript" src="../src/mangame.js"></script>
+<script type="text/javascript">
+    
+var SceneTest = Scene2D.extend({
+
+    init: function(game) {
+        this._super(game);
+        var self = this;
+        
+        var shapes = new GraphicsGroup(game.canvas, 100, 100);
+        
+        var rect = new Rectangle(game.canvas, 0, 0, 200, 40);
+        rect.fill().color("green");
+        rect.stroke().size(2);
+        shapes.add(rect);
+        
+        var circle = new Circle(game.canvas, 100, 100, 40);
+        circle.fill().color("red");
+        circle.stroke().size(2);
+        shapes.add(circle);
+        
+        var triangle = new Triangle(game.canvas, 280, 0, 330, 100, 380, 0);
+        triangle.fill().color("yellow");
+        triangle.stroke().size(2);
+        shapes.add(triangle);
+        
+        var points = [
+            [200, 100], [280, 80], [300, 140], [220, 180]
+        ];
+        var polygon = new Polygon(game.canvas, points);
+        polygon.fill().color("blue");
+        polygon.stroke().size(2);
+        shapes.add(polygon);
+        
+        this.add(shapes);
+    },
+    
+    onUpdate: function(elapsedTime) {
+    }
+
+})
+
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+
+    var game = new Game(canvas, {require: ['geom']});
+    game.onLoad = function() {
+        game.showFps = true;
+
+        var scene = new SceneTest(game);
+        game.addScene(scene);
+
+        game.play();
+    }
+
+}
+</script>
+</head>
+<body>
+    <div id="example" class="geom">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Geom example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Geometric shapes demo</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
