@@ -253,7 +253,7 @@ var SimpleButton = Button.extend({
             out: this._outGroup(game),
             over: this._overGroup(game),
             pressed: this._pressedGroup(game),
-            onrelease: props.action
+            onrelease: props.click
         });
     },
     

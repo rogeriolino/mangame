@@ -33,7 +33,7 @@ function createDescription(canvas, text) {
 function createBtnNext(game) {
     return new SimpleButton(game, game.canvas.width() - 170, game.canvas.height() - 50, {
         label: 'Next Scene >',
-        action: function() { 
+        click: function() { 
             game.nextScene({
                 transition: ['slideLeft', 'slideTop', 'slideBottom', 'fade'].random(), 
                 effect: 'linear'
@@ -45,7 +45,7 @@ function createBtnNext(game) {
 function createBtnPrev(game) {
     return new SimpleButton(game, 20, game.canvas.height() - 50, {
         label: '< Prev Scene',
-        action: function() { 
+        click: function() { 
             game.prevScene({
                 transition: ['slideRight', 'slideTop', 'slideBottom', 'fade'].random(), 
                 effect: 'linear'

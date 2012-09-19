@@ -20,7 +20,7 @@ var Hero = Graphics.extend({
         this.walkingX = 0;
         this.walkingY = 0;
         this.walking = false;
-        this.speed = 1;
+        this.speed = 50;
         this.setup();
     },
 
@@ -29,10 +29,12 @@ var Hero = Graphics.extend({
         this.imageFrames = 3;
         this.imageCurrentFrame = 0;
         this.image = new Image2D(this.tileMap.game.canvas, "img/chars.png");
-        this.image.viewport.pos().x(0);
-        this.image.viewport.pos().y(0);
-        this.image.viewport.width(this.width());
-        this.image.viewport.height(this.height());
+        this.image.onLoad = function() {
+            self.image.viewport.pos().x(0);
+            self.image.viewport.pos().y(0);
+            self.image.viewport.width(self.width());
+            self.image.viewport.height(self.height());
+        }
         this.tileMap.game.addEventListener(Keyboard.KEY_DOWN, function(e) { self.move(e) });
         this.tileMap.game.addEventListener(Keyboard.KEY_UP, function(e) { self.stop(e) });
         this.elapsedTime = 0;
@@ -76,17 +78,20 @@ var Hero = Graphics.extend({
     },
 
     update: function(elapsedTime) {
-        var speed = this.speed;
+        var speed = this.speed / (1000 / elapsedTime);
         if (Math.abs(this.walkingX) == Math.abs(this.walkingY)) {
-            speed = this.speed / 1.5;
+            speed *= .75;
         }
+        
         var x = this.pos().x() + speed * this.walkingX;
         var y = this.pos().y() + speed * this.walkingY;
+        
         var tileUpLeft = this.tileMap.getTileByPos(x + this.paddingLeft, y + this.paddingTop);
         var tileUpRight = this.tileMap.getTileByPos(x + this.width() - this.paddingRight, y + this.paddingTop);
         var tileDownLeft = this.tileMap.getTileByPos(x + this.paddingLeft, y + this.height() - this.paddingBottom);
         var tileDownRight = this.tileMap.getTileByPos(x + this.width() - this.paddingRight, y + this.height() - this.paddingBottom);
-        if (tileUpLeft.walkable && tileUpRight.walkable && tileDownLeft.walkable && tileDownRight.walkable) {
+        
+        if (tileUpLeft.walkable() && tileUpRight.walkable() && tileDownLeft.walkable() && tileDownRight.walkable()) {
             this.pos().x(x);
             this.pos().y(y);
         }
@@ -149,7 +154,7 @@ var TileMapBuilder = Class.extend({
                 var tr = tiles[i][j][0];
                 var tc = tiles[i][j][1];
                 var tile = new Tile(map, i, j, tr, tc);
-                tile.walkable = (tiles[i][j][2] == 0);
+                tile.walkable(tiles[i][j][2] == 0);
                 map.addTile(tile);
             }
         }
@@ -162,13 +167,21 @@ var SceneTest = Scene2D.extend({
     
     init: function(game) {
         this._super(game);
-
+        var self = this;
         var tmb = new TileMapBuilder();
         this.tileMap = tmb.createTileMap(game, tmb.maps.map1);
         this.hero = new Hero(this.tileMap, 200, 150);
 
         this.add(this.tileMap);
         this.add(this.hero);
+        
+        var button = new SimpleButton(game, 50, game.canvas.height() - 80, {
+            label: 'Show grid',
+            click: function() {
+                self.tileMap.showGrid(!self.tileMap.showGrid());
+            }
+        });
+        this.add(button);
 
         this.milis = 0;
         this.seconds = 0;

@@ -26,13 +26,13 @@ var SceneTest = Scene2D.extend({
 
         this.button1 = new SimpleButton(game, 0, 140, {
             label: 'Submit',
-            action: function() { alert("Username: " + self.inputText.value() + "\nPassword: " + self.inputPassword.value()); }
+            click: function() { alert("Username: " + self.inputText.value() + "\nPassword: " + self.inputPassword.value()); }
         });
         loginBox.add(this.button1);
 
         this.button2 = new SimpleButton(game, this.button1.width() + 10, 140, {
             label: 'Clear',
-            action: function() { self.inputText.value(""); self.inputPassword.value(""); }
+            click: function() { self.inputText.value(""); self.inputPassword.value(""); }
         });
         loginBox.add(this.button2);
 

@@ -23,19 +23,19 @@ var SceneTest = Scene2D.extend({
         var btnY = 30;
         var btnPlay = new SimpleButton(game, 0, btnY, {
             label: 'Play',
-            action: function() { self.music.play(); self.lblStatus.value("Status: playing"); }
+            click: function() { self.music.play(); self.lblStatus.value("Status: playing"); }
         });
         player.add(btnPlay);
         
         var btnPause = new SimpleButton(game, btnPlay.pos().x() + btnPlay.width() + 10, btnY, {
             label: 'Pause',
-            action: function() { self.music.pause(); self.lblStatus.value("Status: paused"); }
+            click: function() { self.music.pause(); self.lblStatus.value("Status: paused"); }
         });
         player.add(btnPause);
         
         var btnStop = new SimpleButton(game, btnPause.pos().x() + btnPause.width() + 10, btnY, {
             label: 'Stop',
-            action: function() { self.music.stop(); self.lblStatus.value("Status: stoped"); }
+            click: function() { self.music.stop(); self.lblStatus.value("Status: stoped"); }
         });
         player.add(btnStop);
         

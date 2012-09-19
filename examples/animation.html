@@ -28,11 +28,11 @@ var SceneTest = Scene2D.extend({
         
         this.button1 = new SimpleButton(game, 20, 420, {
             label: 'Play',
-            action: function() { animStarted = !animStarted; }
+            click: function() { animStarted = !animStarted; }
         });
         this.button2 = new SimpleButton(game, 80, 420, {
             label: 'About',
-            action: function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogério Lino <http://rogeriolino.com>") }
+            click: function() { alert("Javascript Game Engine for HTML5 Canvas by \nRogério Lino <http://rogeriolino.com>") }
         });
         var x = 0, w = 30;
         var radioGroup = new GraphicsGroup(game.canvas, 155, 415);

@@ -5,8 +5,8 @@
 var Mangame = {
     name: "mangame",
     filename: "mangame.js",
-    version: "0.2.1",
-    dev: true
+    version: "0.2.2",
+    dev: false
 };
 var scripts = document.getElementsByTagName('script');
 Mangame.script = scripts[scripts.length - 1];
@@ -722,13 +722,13 @@ var Game = Class.extend({
 
     play: function() {
         if (!this.running) {
+            this.startTime = (new Date()).getTime();
             this._run();
             if (this.currentScene) {
                 this.currentScene.start();
             }
         }
         this.running = true;
-        this.startTime = (new Date()).getTime();
     },
 
     _run: function() {
@@ -918,9 +918,9 @@ var GameEvent = Class.extend({
 var Viewport = Class.extend({
 
     init: function(x, y, w, h) {
-        this.createProperty('pos', new Point());
-        this.createProperty('width', 0);
-        this.createProperty('height', 0);
+        this.createProperty('pos', new Point(x, y));
+        this.createProperty('width', w);
+        this.createProperty('height', h);
     },
     
     contains: function(pos) {
@@ -1082,7 +1082,7 @@ var Image2D = Graphics.extend({
             var dy = 0; // The y coordinate where to place the image on the canvas
             var dw = sw; // The width of the image to use (stretch or reduce the image)
             var dh = sh; // The height of the image to use (stretch or reduce the image)
-            this.canvas.context.drawImage(this._image, sx, sy, dw, dh, dx, dy, dw, dh);
+            this.canvas.context.drawImage(this._image, sx, sy, sw, sh, dx, dy, dw, dh);
         }
     }
 
