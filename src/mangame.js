@@ -6,7 +6,7 @@ var Mangame = {
     name: "mangame",
     filename: "mangame.js",
     version: "0.2.2",
-    dev: false
+    dev: true
 };
 var scripts = document.getElementsByTagName('script');
 Mangame.script = scripts[scripts.length - 1];
@@ -415,7 +415,7 @@ var Graphics = CanvasNode.extend({
         this.createProperty('stroke', new Stroke());
     },
 
-    update: function(elapsedTime) { 
+    update: function(elapsedTime) {
     },
 
     draw: function() {
@@ -918,7 +918,7 @@ var GameEvent = Class.extend({
 var Viewport = Class.extend({
 
     init: function(x, y, w, h) {
-        this.createProperty('pos', new Point(x, y));
+        this.createProperty('pos', new Point(x || 0, y || 0));
         this.createProperty('width', w);
         this.createProperty('height', h);
     },
@@ -984,6 +984,14 @@ var Mouse = GameIO.extend({
         this._super(game);
         this.createProperty('pos', new Point());
         this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {self.updatePos(e.pos)});
+    },
+    
+    showCursor: function(bool) {
+        if (bool) {
+            this.game.canvas._canvas.style.cursor = "default";
+        } else {
+            this.game.canvas._canvas.style.cursor = "none";
+        }
     },
     
     isMouseEvent: function(e) {

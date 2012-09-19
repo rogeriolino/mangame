@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Sound | Mangame</title>
+<title>Cursor | Mangame</title>
 <link rel="stylesheet" type="text/css" href="css/examples.css" />
 <script type="text/javascript" src="../src/mangame.js"></script>
 <script type="text/javascript">
@@ -13,32 +13,51 @@ var SceneTest = Scene2D.extend({
         this._super(game);
         var self = this;
         
-        var shapes = new GraphicsGroup(game.canvas, 100, 100);
+        this.drawing = false;
         
-        var rect = new Rectangle(game.canvas, 0, 0, 200, 40);
-        rect.fill().color("green");
-        rect.stroke().size(2);
-        shapes.add(rect);
+        this.paths = [];
+        this.getPath = function(pos) {
+            if (!self.path) {
+                self.path = new FreePath(game.canvas, pos.x(), pos.y());
+                this.paths.push(self.path);
+                this.add(self.path);
+            }
+            return self.path;
+        }
         
-        var circle = new Circle(game.canvas, 100, 100, 40);
-        circle.fill().color("red");
-        circle.stroke().size(2);
-        shapes.add(circle);
+        this.cursor = new Image2D(game.canvas, "img/pencil_32.png?asdf", 0, 0);
+        this.add(this.cursor);
         
-        var triangle = new Triangle(game.canvas, 280, 0, 330, 100, 380, 0);
-        triangle.fill().color("yellow");
-        triangle.stroke().size(2);
-        shapes.add(triangle);
+        this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {
+            if (self.drawing) {
+                self.getPath().points().push(e.pos);
+            } else {
+                self.path = null;
+            }
+            self.cursor.pos(e.pos);
+        });
         
-        var points = [
-            [200, 100], [280, 80], [300, 140], [220, 180]
-        ];
-        var polygon = new Polygon(game.canvas, points);
-        polygon.fill().color("blue");
-        polygon.stroke().size(2);
-        shapes.add(polygon);
+        this.game.addEventListener(Mouse.MOUSE_DOWN, function(e) {
+            e.originalEvent.preventDefault(); // prevent "selection" cursor
+            self.drawing = true;
+            self.getPath(e.pos);
+        });
         
-        this.add(shapes);
+        this.game.addEventListener(Mouse.MOUSE_UP, function(e) {
+            self.drawing = false;
+        });
+        
+        this.add(new SimpleButton(game, 10, game.canvas.height() - 50, {
+            label: 'Clear',
+            click: function() {
+                for (var i = 0; i < self.paths.length; i++) {
+                    self.remove(self.paths[i]);
+                }
+                self.paths = [];
+            }
+        }));
+        
+        game.mouse.showCursor(false);
     },
     
     onUpdate: function(elapsedTime) {
@@ -48,31 +67,30 @@ var SceneTest = Scene2D.extend({
 
 window.onload = function() {
 
-    var canvas = new Canvas("canvas");
+    var game = new Game(
+        "canvas", {
+            require: ['geom', 'ui'],
+            load: function() {
+                game.showFps = true;
+                var scene = new SceneTest(game);
+                game.addScene(scene);
 
-    var game = new Game(canvas, {require: ['geom']});
-    game.onLoad = function() {
-        game.showFps = true;
-
-        var scene = new SceneTest(game);
-        game.addScene(scene);
-
-        game.play();
-    }
-
+                game.play();
+            }
+    });
 }
 </script>
 </head>
 <body>
-    <div id="example" class="geom">
+    <div id="example" class="cursor">
         <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
-        <h2>Geom example</h2>
+        <h2>Cursor example</h2>
         <div class="canvas-frame">
             <canvas id="canvas">
                 <p>Your browser doesn't support HTML5 Canvas</p>
             </canvas>
             <div class="description">
-                <p>Geometric shapes demo</p>
+                <p>Custom cursor example</p>
             </div>
         </div>
     </div>

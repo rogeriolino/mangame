@@ -31,6 +31,25 @@ var Line = Graphics.extend({
 
 });
 
+var FreePath = Graphics.extend({
+
+    init: function(canvas, x, y, points) {
+        this._super(canvas, x, y);
+        this.fill().visible(false);
+        this.createProperty('points', points || []);
+    },
+
+    _drawImpl: function() {
+        this.canvas.context.moveTo(0, 0);
+        var points = this.points();
+        for (var i = 0; i < points.length; i++) {
+            var p = points[i];
+            this.canvas.context.lineTo(p.x() - this.pos().x(), p.y() - this.pos().y());
+        }
+    }
+
+});
+
 var Rectangle = Graphics.extend({
 
     init: function(canvas, x, y, width, height, radius) {
