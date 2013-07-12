@@ -78,6 +78,25 @@ var Rectangle = Graphics.extend({
         if (radius > 0) {
             this.canvas.context.quadraticCurveTo(0, 0, 0, radius);
         }
+    },
+            
+    collision: function(target) {
+        var points = [];
+        if (target instanceof Point) {
+            points.push(target);
+        } else if (target instanceof Rectangle) {
+            points.push(target.pos());
+            points.push(new Point(target.right(), target.bottom()));
+        }
+        var x2 = this.pos().x() + this.width();
+        var y2 = this.pos().y() + this.height();
+        for (var i = 0; i < points.length; i++) {
+            var pos = points[i];
+            if ((pos.x() >= this.pos().x() && pos.x() <= x2) && (pos.y() >= this.pos().y() && pos.y() <= y2)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 });

@@ -24,14 +24,18 @@ window.onload = function() {
                 this.dy = 0;
                 this.pieceSize = 10;
                 this.lastUpdate = 0;
-                this.initLength = 15;
+                this.initLength = 3;
+                this.fruitsCount = 0;
+                this.fruitsToInc = 3;
                 this.alive = true;
                 this.pieces = [];
+                this.fruit = this._createFruit();
                 this.pieces.push(this._createPiece(this.x, this.y));
                 for (var i = 1; i < this.initLength; i++) {
                     this.pieces.push(this._createPiece(this.x - this.pieceSize * i, this.y));
                 }
                 this.add(this.pieces);
+                this.add(this.fruit);
                 var self = this;
                 game.addEventListener(Keyboard.KEY_DOWN, function(e) {
                     var key = e.originalEvent.keyCode;
@@ -48,10 +52,23 @@ window.onload = function() {
                     }
                 });
             },
-                    
+            
             _createPiece: function(x, y) {
                 var rect = new Rectangle(this.game.canvas, x, y, this.pieceSize, this.pieceSize);
                 return rect;
+            },
+            
+            _createFruit: function() {
+                var pos = this._fruitPos();
+                var rect = new Rectangle(this.game.canvas, pos.x(), pos.y(), this.pieceSize, this.pieceSize);
+                return rect;
+            },
+                    
+            _fruitPos: function() {
+                return new Point(
+                    Math.ceil(Math.random() * this.game.canvas.width()),
+                    Math.ceil(Math.random() * this.game.canvas.height())
+                );
             },
             
             onUpdate: function(elapsedTime) {
@@ -76,8 +93,31 @@ window.onload = function() {
                             piece.pos().x(next.pos().x());
                             piece.pos().y(next.pos().y());
                         }
-                        this.pieces[0].pos().x(this.x);
-                        this.pieces[0].pos().y(this.y);
+                        var head = this.pieces[0]
+                        head.pos().x(this.x);
+                        head.pos().y(this.y);
+                        if (head.collision(this.fruit)) {
+                            this.fruitsCount++;
+                            // increment the snake
+                            if (this.fruitsCount > 0 && this.fruitsCount % this.fruitsToInc === 0) {
+                                this.pieces.push(this._createPiece(this.x, this.y));
+                                this.add(this.pieces[this.pieces.length - 1]);
+                            }
+                            var newPos;
+                            var validPos;
+                            do {
+                                validPos = true;
+                                newPos = this._fruitPos();
+                                for (var i = 0; i < this.pieces.length; i++) {
+                                    if (this.pieces[i].collision(newPos)) {
+                                        validPos = false;
+                                        break;
+                                    }
+                                }
+                                this.fruit.pos().x(newPos.x());
+                                this.fruit.pos().y(newPos.y());
+                            } while (!validPos);
+                        }
                         this.lastUpdate = 0;
                     }
                 }
