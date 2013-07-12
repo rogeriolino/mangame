@@ -2,7 +2,7 @@
 
 Javascript Game Engine for HTML5 Canvas
 
-author (Rogério Lino)[http://rogeriolino.com]
+author [Rogério Lino](http://rogeriolino.com)
 
 
 ## Online Examples 
