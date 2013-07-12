@@ -55,14 +55,14 @@ var TileMap = GraphicsGroup.extend({
         }
         if (this._isValidPosition(tile.row(), tile.col())) {
             var i = this._getIndex(tile.row(), tile.col());
-            this.childs[i] = tile;
+            this.childs()[i] = tile;
         }
     },
 
     getTile: function(row, col) {
         if (this._isValidPosition(row, col)) {
             var i = this._getIndex(row, col);
-            return this.childs[i];
+            return this.childs()[i];
         }
         return null;
     },

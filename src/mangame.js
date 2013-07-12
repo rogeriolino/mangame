@@ -12,7 +12,7 @@ var scripts = document.getElementsByTagName('script');
 Mangame.script = scripts[scripts.length - 1];
 Mangame.path = Mangame.script.src.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
 
-// Class Inheritance by John Resig
+// Class Inheritance by John Resig, modified by rogeriolino
 (function(){
     var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
     this.Class = function(){};
@@ -21,6 +21,57 @@ Mangame.path = Mangame.script.src.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
         initializing = true;
         var prototype = new this();
         initializing = false;
+        function Class() {
+            if (!initializing && this.init) this.init.apply(this, arguments);
+        }
+        Class.prototype = prototype;
+        Class.constructor = Class;
+        Class.extend = arguments.callee;
+        // mangame: getter/setter generator => get: prop(), set: prop(val)
+        Class.prototype.createProperty = function(name, defaultValue) {
+            var propName = '_' + name;
+            this[propName] = defaultValue;
+            this[name] = (function() {
+                if (arguments.length) {
+                    var newValue = arguments[0];
+                    if (newValue !== this[propName]) {
+                        this.fire('change', [{
+                            changed: name,
+                            oldValue: this[propName],
+                            newValue: newValue
+                        }]);
+                    }
+                    this[propName] = newValue;
+                    return this;
+                }
+                return this[propName];
+            });
+        };
+        Class.prototype.set = function() {
+            if (arguments.length === 2) {
+                this['_' + arguments[0]] = arguments[1];
+            } else if (arguments.length === 1) {
+                var arg = arguments[0];
+                for (var i in arg) {
+                    this['_' + i] = arg[i];
+                }
+            }
+        };
+        Class.prototype.on = function(evt, handler) {
+            if (typeof(handler) === 'function') {
+                this._events = this._events || {};
+                this._events[evt] = this._events[evt] || [];
+                this._events[evt].push(handler);
+            }
+        };
+        Class.prototype.fire = function(evt, args) {
+            if (this._events && this._events[evt]) {
+                for (var i = 0; i < this._events[evt].length; i++) {
+                    var fn = this._events[evt][i];
+                    fn.apply(this, args);
+                }
+            }
+        };
         for (var name in prop) {
             prototype[name] = typeof prop[name] == "function" && typeof _super[name] == "function" && fnTest.test(prop[name]) ?
             (function(name, fn) {
@@ -32,34 +83,6 @@ Mangame.path = Mangame.script.src.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
                 return ret;
               };
             })(name, prop[name]) : prop[name];
-        }
-        function Class() {
-            if (!initializing && this.init) this.init.apply(this, arguments);
-        }
-        Class.prototype = prototype;
-        Class.constructor = Class;
-        Class.extend = arguments.callee;
-        Class.prototype.createProperty = function(name, defaultValue) {
-            this['_' + name] = defaultValue;
-            this[name] = (function() {
-                if (arguments.length) {
-                    this['_' + name] = arguments[0];
-                    return this;
-                }
-                return this['_' + name];
-            });
-        }
-        Class.prototype.set = function(prop) {
-            prop = (prop instanceof Object) ? prop : {};
-            for (var i in prop) {
-                if (this[i]) {
-                    if (typeof(this[i]) == 'function') {
-                        this[i](prop[i]);
-                    } else {
-                        this[i] = prop[i];
-                    }
-                }
-            }
         }
         return Class;
     };
@@ -97,7 +120,7 @@ Array.prototype.removeObject = function(obj) {
     var v;
     var newArr = [];
     while (v = this.shift()) {
-        if (v != obj) {
+        if (v !== obj) {
             newArr.push(v);
         }
     }
@@ -110,9 +133,9 @@ var Canvas = Class.extend({
     defaultHeight: 500,
 
     init: function(node) {
-        if (typeof(node) == "string") {
+        if (typeof(node) === "string") {
             this._canvas = document.getElementById(node);
-            if (this._canvas == null) {
+            if (!this._canvas) {
                 throw "Invalid canvas tag id: " + node;
             }
         } else if (node instanceof HTMLCanvasElement) {
@@ -120,17 +143,24 @@ var Canvas = Class.extend({
         } else {
             throw "Invalid canvas constructor parameter. The parameter must be a canvas element";
         }
-        if (this._canvas.getContext) {
-            this.context = this._canvas.getContext("2d");
-            if (!this._canvas.getAttribute('width')) {
-                this._canvas.width = this.defaultWidth;
-            }
-            if (!this._canvas.getAttribute('height')) {
-                this._canvas.height = this.defaultHeight;
-            }
-        } else {
+        if (!this._canvas.getContext) {
             throw "Your browser doesn't support canvas";
         }
+        this.context = this._canvas.getContext("2d");
+        if (!this._canvas.getAttribute('width')) {
+            this._canvas.width = this.defaultWidth;
+        }
+        if (!this._canvas.getAttribute('height')) {
+            this._canvas.height = this.defaultHeight;
+        }
+        var self = this;
+        window.addEventListener(Mouse.MOUSE_MOVE, function(e) {
+            if (self.isOver()) {
+                self.fire('over');
+            } else {
+                self.fire('out');
+            }
+        });
     },
     
     width: function() {
@@ -180,7 +210,7 @@ var Point = Class.extend({
     init: function(x, y) {
         this.createProperty('x', 0);
         this.createProperty('y', 0);
-        if (arguments.length == 2) {
+        if (arguments.length === 2) {
             this.x(x);
             this.y(y);
         } else if (arguments[0] instanceof Object) {
@@ -241,13 +271,20 @@ var Stroke = Class.extend({
 var CanvasNode = Class.extend({
 
     init: function(canvas, x, y) {
+        var self = this;
         this.canvas = canvas;
         this.createProperty('width', 0);
         this.createProperty('height', 0);
         this.createProperty('angle', 0);
         this.createProperty('pos', new Point(x, y));
-        this.createProperty('shadow', new Shadow());
         this.visible(true);
+        window.addEventListener(Mouse.MOUSE_MOVE, function(e) {
+            if (self.isOver()) {
+                self.fire('over');
+            } else {
+                self.fire('out');
+            }
+        });
     },
     
     visible: function() {
@@ -292,10 +329,8 @@ var CanvasNode = Class.extend({
     },
 
     rotate: function() {
-        if (this.angle != 0) {
-            var theta = this.angle() * Math.PI / 180;
-            this.canvas.context.rotate(theta);
-        }
+        var theta = this.angle() * Math.PI / 180;
+        this.canvas.context.rotate(theta);
     },
     
     parent: function(node) {
@@ -308,6 +343,18 @@ var CanvasNode = Class.extend({
             }
         }
         return this._parent;
+    },
+    
+    isOver: function() {
+        if (!this.visible()) {
+            return false;
+        }
+        var x = this.pos().x();
+        var y = this.pos().y();
+        var mouse = this.canvas.game.mouse;
+        var mx = mouse.pos().x();
+        var my = mouse.pos().y();
+        return (mx >= x && mx <= x + this.width()) && (my >= y && my <= y + this.height());
     }
 
 })
@@ -316,6 +363,7 @@ var CanvasNodeGroup = CanvasNode.extend({
 
     init: function(canvas, x, y) {
         this._super(canvas, x, y);
+        this.createProperty('childs', []);
         this.clear();
     },
 
@@ -342,7 +390,7 @@ var CanvasNodeGroup = CanvasNode.extend({
             if (child instanceof CanvasNode) {
                 child.canvas = this.canvas;
                 child.parent(this);
-                this.childs.push(child);
+                this.childs().push(child);
                 this._updateWidth(child);
                 this._updateHeight(child);
                 if (this.postAdd) {
@@ -355,11 +403,11 @@ var CanvasNodeGroup = CanvasNode.extend({
     },
 
     remove: function(child) {
-        this.childs.remove(child);
+        this.childs().remove(child);
     },
 
     clear: function() {
-        this.childs = [];
+        this.childs([]);
     }
 
 })
@@ -371,8 +419,8 @@ var GraphicsGroup = CanvasNodeGroup.extend({
     },
 
     update: function(elapsedTime) {
-        for (var i = 0; i < this.childs.length; i++) {
-            var child = this.childs[i];
+        for (var i = 0; i < this.childs().length; i++) {
+            var child = this.childs()[i];
             child.update(elapsedTime);
         }
         if (this.onUpdate) {
@@ -386,8 +434,8 @@ var GraphicsGroup = CanvasNodeGroup.extend({
             this.canvas.context.translate(this.pos().x(), this.pos().y());
             this.rotate();
             this._preDraw();
-            for (var i = 0; i < this.childs.length; i++) {
-                var child = this.childs[i];
+            for (var i = 0; i < this.childs().length; i++) {
+                var child = this.childs()[i];
                 if (child.draw && this._canDrawChild(child)) {
                     child.draw();
                 }
@@ -413,6 +461,7 @@ var Graphics = CanvasNode.extend({
         this._super(canvas, x, y);
         this.createProperty('fill', new Fill());
         this.createProperty('stroke', new Stroke());
+        this.createProperty('shadow', new Shadow());
     },
 
     update: function(elapsedTime) {
@@ -557,6 +606,7 @@ var Game = Class.extend({
         } else {
             this.canvas = new Canvas(canvas);
         }
+        this.canvas.game = this;
         this.scenes = [];
         this.running = false;
         this.currentScene = null;

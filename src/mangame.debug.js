@@ -20,7 +20,6 @@ var Debugger = Class.extend({
         this.output.innerHTML = "";
     }
 
-    
 })
 
 var DebuggerUtils = Class.extend({

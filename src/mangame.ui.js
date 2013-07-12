@@ -41,6 +41,9 @@ var HtmlComponent = UIComponent.extend({
         if (this.postCreateTag) {
             this.postCreateTag(tag);
         }
+        var self = this;
+        tag.addEventListener('click', function() { self.fire('click'); }, false);
+        tag.addEventListener('change', function() { self.fire('change'); }, false);
         return tag;
     },
 
@@ -72,10 +75,6 @@ var HtmlComponent = UIComponent.extend({
                 height = this.height() + "px";
             }
         }
-    },
-    
-    on: function(event, fn) {
-        this.tag().addEventListener(event, fn, false);
     }
     
 });
@@ -180,21 +179,21 @@ var Button = UIComponent.extend({
 
     _attachEvents: function() {
         var self = this;
-        this.game.addEventListener(Mouse.MOUSE_MOVE, function(e) {
-                if (!self.isPressed) {
-                    if (self.isOver()) {
-                        self._changeCurrGraphic(self.over);
-                    } else {
-                        self._changeCurrGraphic(self.out);
-                    }
-                }
+        this.on('over', function() {
+            if (!self.isPressed) {
+                self._changeCurrGraphic(self.over);
             }
-        );
+        });
+        this.on('out', function() {
+            if (!self.isPressed) {
+                self._changeCurrGraphic(self.out);
+            }
+        });
         this.game.addEventListener(Mouse.MOUSE_DOWN, function(e) {
                 if (self.isOver()) {
                     self.isPressed = true;
                     self._changeCurrGraphic(self.pressed);
-                    if (typeof(self.onPress) == "function") {
+                    if (typeof(self.onPress) === "function") {
                         self.onPress();
                     }
                 }
@@ -203,7 +202,7 @@ var Button = UIComponent.extend({
         this.game.addEventListener(Mouse.MOUSE_UP, function(e) {
                 if (self.isOver()) {
                     self._changeCurrGraphic(self.over);
-                    if (typeof(self.onRelease) == "function") {
+                    if (typeof(self.onRelease) === "function") {
                         self.onRelease();
                     }
                 } else {

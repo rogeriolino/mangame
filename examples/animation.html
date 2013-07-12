@@ -44,7 +44,7 @@ var SceneTest = Scene2D.extend({
                 radio.tag().checked = true;
             }
             radio.on('click', function() {
-                animSpeed = parseInt(this.value) * 2;
+                animSpeed = parseInt(this.value()) * 2;
             });
             radioGroup.add(radio);
             x += w;

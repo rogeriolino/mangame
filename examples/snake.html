@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Snake | Mangame</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css" />
+<script type="text/javascript" src="js/util.js"></script>
+<script type="text/javascript" src="../src/mangame.js"></script>
+<script type="text/javascript">
+
+window.onload = function() {
+
+    var canvas = new Canvas("canvas");
+    var game = new Game(canvas, {require: ['geom', 'ui']});
+    game.onLoad = function() {
+
+        var SnakeGame = Scene2D.extend({
+
+            init: function(game) {
+                this._super(game);
+                this.x = 150;
+                this.y = 150;
+                this.dx = 1;
+                this.dy = 0;
+                this.pieceSize = 10;
+                this.lastUpdate = 0;
+                this.initLength = 15;
+                this.alive = true;
+                this.pieces = [];
+                this.pieces.push(this._createPiece(this.x, this.y));
+                for (var i = 1; i < this.initLength; i++) {
+                    this.pieces.push(this._createPiece(this.x - this.pieceSize * i, this.y));
+                }
+                this.add(this.pieces);
+                var self = this;
+                game.addEventListener(Keyboard.KEY_DOWN, function(e) {
+                    var key = e.originalEvent.keyCode;
+                    if (key === 37 || key === 39 || key === 38 || key === 40) {
+                        e.originalEvent.preventDefault(); // prevent scroll
+                        if (self.dx === 0 && (key === 37 || key === 39)) {
+                            self.dx = (key === 37) ? -1 : 1;
+                            self.dy = 0;
+                        }
+                        if (self.dy === 0 && (key === 38 || key === 40)) {
+                            self.dy = (key === 38) ? -1 : 1;
+                            self.dx = 0;
+                        }
+                    }
+                });
+            },
+                    
+            _createPiece: function(x, y) {
+                var rect = new Rectangle(this.game.canvas, x, y, this.pieceSize, this.pieceSize);
+                return rect;
+            },
+            
+            onUpdate: function(elapsedTime) {
+                if (this.alive) {
+                    this.lastUpdate += elapsedTime;
+                    if (this.lastUpdate > 100) {
+                        var x = this.x + this.dx * this.pieceSize;
+                        var y = this.y + this.dy * this.pieceSize;
+                        if ((this.dx > 0 && x >= this.game.canvas.width() || this.dx < 0 && x < 0) ||
+                            (this.dy > 0 && y >= this.game.canvas.height() || this.dy < 0 && y < 0)) {
+                            this.alive = false;
+                        }
+                        if (x >= 0 && x <= this.game.canvas.width() - this.pieceSize) {
+                            this.x = x;
+                        }
+                        if (y >= 0 && y <= this.game.canvas.height() - this.pieceSize) {
+                            this.y = y;
+                        }
+                        for (var i = this.pieces.length - 1; i > 0; i--) {
+                            var piece = this.pieces[i];
+                            var next = this.pieces[i - 1];
+                            piece.pos().x(next.pos().x());
+                            piece.pos().y(next.pos().y());
+                        }
+                        this.pieces[0].pos().x(this.x);
+                        this.pieces[0].pos().y(this.y);
+                        this.lastUpdate = 0;
+                    }
+                }
+            }
+        });
+        game.showFps = true;
+        game.addScene(new SnakeGame(game));
+        game.play();
+    }
+
+}
+</script>
+</head>
+<body>
+    <div id="example" class="keyboard">
+        <h1><a href="https://github.com/rogeriolino/mangame" title="goto project">MANGAME</a></h1>
+        <h2>Snake example</h2>
+        <div class="canvas-frame">
+            <canvas id="canvas">
+                <p>Your browser doesn't support HTML5 Canvas</p>
+            </canvas>
+            <div class="description">
+                <p>Simple snake game example</p>
+            </div>
+        </div>
+    </div>
+</html>
