@@ -168,7 +168,7 @@ window.onload = function() {
                             piece.pos().y(next.pos().y());
                         }
                         var head = this.pieces[0];
-                        head.pos(newPoint)
+                        head.pos(newPoint);
                         if (head.pos().equals(this.fruit.pos())) {
                             this.fruitsCount++;
                             this.score.value('Score: ' + this.fruitsCount);
