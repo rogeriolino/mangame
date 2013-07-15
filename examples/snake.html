@@ -11,31 +11,45 @@
 window.onload = function() {
 
     var canvas = new Canvas("canvas");
-    var game = new Game(canvas, {require: ['geom', 'ui']});
+    var game = new Game(canvas, {require: ['geom', 'ui', 'tween']});
     game.onLoad = function() {
+        
+        /**
+         * Game title
+         */
+        var GameTitle = Scene2D.extend({
+            
+            init: function(game) {
+                this._super(game);
+                // title
+                this.title = new Text(game.canvas, game.canvas.width() / 2, game.canvas.height() / 2 - 100, "Snake game");
+                this.title.align('center');
+                this.title.color('#339933');
+                this.title.shadow().blur(5);
+                this.title.shadow().offsetX(1);
+                this.title.shadow().offsetY(1);
+                this.title.size(50);
+                // button
+                this.startButton = new SimpleButton(game, game.canvas.width() / 2 - 20, game.canvas.height() - 100, {
+                    label: 'Start',
+                    click: function() { 
+                        game.nextScene({
+                            transition: 'fade', 
+                            effect: 'linear'
+                        });
+                    }
+                });
+                this.add(this.title);
+                this.add(this.startButton);
+            }
+            
+        });
 
         var SnakeGame = Scene2D.extend({
 
             init: function(game) {
                 this._super(game);
-                this.x = 150;
-                this.y = 150;
-                this.dx = 1;
-                this.dy = 0;
-                this.pieceSize = 10;
-                this.lastUpdate = 0;
-                this.initLength = 3;
-                this.fruitsCount = 0;
-                this.fruitsToInc = 3;
-                this.alive = true;
-                this.pieces = [];
-                this.fruit = this._createFruit();
-                this.pieces.push(this._createPiece(this.x, this.y));
-                for (var i = 1; i < this.initLength; i++) {
-                    this.pieces.push(this._createPiece(this.x - this.pieceSize * i, this.y));
-                }
-                this.add(this.pieces);
-                this.add(this.fruit);
+                // key events
                 var self = this;
                 game.addEventListener(Keyboard.KEY_DOWN, function(e) {
                     var key = e.originalEvent.keyCode;
@@ -51,6 +65,36 @@ window.onload = function() {
                         }
                     }
                 });
+                this._playGame();
+            },
+                    
+            _playGame: function() {
+                this.x = 150;
+                this.y = 150;
+                this.dx = 1;
+                this.dy = 0;
+                this.pieceSize = 10;
+                this.lastUpdate = 0;
+                this.initLength = 3;
+                this.fruitsCount = 0;
+                this.fruitsToInc = 1;
+                this.alive = true;
+                this.pieces = [];
+                this.fruit = this._createFruit();
+                this.pieces.push(this._createPiece(this.x, this.y));
+                for (var i = 1; i < this.initLength; i++) {
+                    this.pieces.push(this._createPiece(this.x - this.pieceSize * i, this.y));
+                }
+                this.score = new Text(game.canvas, 30, game.canvas.height() - 40, "Score: 0");
+                this.score.color('#339933');
+                this.score.shadow().blur(2);
+                this.score.shadow().offsetY(1);
+                this.score.size(16);
+                // clear and add elements
+                this.clear();
+                this.add(this.pieces);
+                this.add(this.fruit);
+                this.add(this.score);
             },
             
             _createPiece: function(x, y) {
@@ -70,6 +114,26 @@ window.onload = function() {
                     Math.ceil(Math.random() * this.game.canvas.height())
                 );
             },
+                    
+            _showGameOver: function() {
+                var gameOver = new Text(game.canvas, this.game.canvas.width() / 2, game.canvas.height() / 2 - 50, "Game Over");
+                gameOver.color('#993333');
+                gameOver.shadow().blur(2);
+                gameOver.shadow().offsetY(1);
+                gameOver.size(36);
+                gameOver.align('center');
+                var self = this;
+                var restart = new SimpleButton(game, game.canvas.width() / 2 - 20, game.canvas.height() - 100, {
+                    label: 'Restart',
+                    click: function() { 
+                        self.remove(gameOver);
+                        self.remove(restart);
+                        self._playGame();
+                    }
+                });
+                this.add(gameOver);
+                this.add(restart);
+            },
             
             onUpdate: function(elapsedTime) {
                 if (this.alive) {
@@ -80,6 +144,7 @@ window.onload = function() {
                         if ((this.dx > 0 && x >= this.game.canvas.width() || this.dx < 0 && x < 0) ||
                             (this.dy > 0 && y >= this.game.canvas.height() || this.dy < 0 && y < 0)) {
                             this.alive = false;
+                            this._showGameOver();
                         }
                         if (x >= 0 && x <= this.game.canvas.width() - this.pieceSize) {
                             this.x = x;
@@ -98,6 +163,7 @@ window.onload = function() {
                         head.pos().y(this.y);
                         if (head.collision(this.fruit)) {
                             this.fruitsCount++;
+                            this.score.value('Score: ' + this.fruitsCount);
                             // increment the snake
                             if (this.fruitsCount > 0 && this.fruitsCount % this.fruitsToInc === 0) {
                                 this.pieces.push(this._createPiece(this.x, this.y));
@@ -124,6 +190,7 @@ window.onload = function() {
             }
         });
         game.showFps = true;
+        game.addScene(new GameTitle(game));
         game.addScene(new SnakeGame(game));
         game.play();
     }
