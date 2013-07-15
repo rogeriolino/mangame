@@ -225,6 +225,13 @@ var Point = Class.extend({
             return new Point(this.x(), this.y());
         }
     },
+            
+    equals: function(point) {
+        if (point instanceof Point) {
+            return this.x() === point.x() && this.y() === point.y();
+        }
+        return false;
+    },
     
     toString: function() {
         return "(" + this._x + "," + this._y + ")";

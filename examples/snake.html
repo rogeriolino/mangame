@@ -110,8 +110,8 @@ window.onload = function() {
                     
             _fruitPos: function() {
                 return new Point(
-                    Math.ceil(Math.random() * this.game.canvas.width()),
-                    Math.ceil(Math.random() * this.game.canvas.height())
+                    Math.floor(Math.random()*(this.game.canvas.width() / this.pieceSize)) * this.pieceSize,
+                    Math.floor(Math.random()*(this.game.canvas.height() / this.pieceSize)) * this.pieceSize
                 );
             },
                     
@@ -139,18 +139,27 @@ window.onload = function() {
                 if (this.alive) {
                     this.lastUpdate += elapsedTime;
                     if (this.lastUpdate > 100) {
-                        var x = this.x + this.dx * this.pieceSize;
-                        var y = this.y + this.dy * this.pieceSize;
-                        if ((this.dx > 0 && x >= this.game.canvas.width() || this.dx < 0 && x < 0) ||
-                            (this.dy > 0 && y >= this.game.canvas.height() || this.dy < 0 && y < 0)) {
+                        this.x = this.x + this.dx * this.pieceSize;
+                        this.y = this.y + this.dy * this.pieceSize;
+                        var newPoint = new Point(this.x, this.y);
+                        // checking collision with wall
+                        if ((this.dx > 0 && this.x >= this.game.canvas.width() || this.dx < 0 && this.x < 0) ||
+                            (this.dy > 0 && this.y >= this.game.canvas.height() || this.dy < 0 && this.y < 0)) {
                             this.alive = false;
+                            
+                        } 
+                        // checking self collision 
+                        else {
+                            for (var i = 1; i < this.pieces.length; i++) {
+                                if (newPoint.equals(this.pieces[i].pos())) {
+                                    this.alive = false;
+                                    break;
+                                }
+                            }
+                            
+                        }
+                        if (!this.alive) {
                             this._showGameOver();
-                        }
-                        if (x >= 0 && x <= this.game.canvas.width() - this.pieceSize) {
-                            this.x = x;
-                        }
-                        if (y >= 0 && y <= this.game.canvas.height() - this.pieceSize) {
-                            this.y = y;
                         }
                         for (var i = this.pieces.length - 1; i > 0; i--) {
                             var piece = this.pieces[i];
@@ -158,10 +167,9 @@ window.onload = function() {
                             piece.pos().x(next.pos().x());
                             piece.pos().y(next.pos().y());
                         }
-                        var head = this.pieces[0]
-                        head.pos().x(this.x);
-                        head.pos().y(this.y);
-                        if (head.collision(this.fruit)) {
+                        var head = this.pieces[0];
+                        head.pos(newPoint)
+                        if (head.pos().equals(this.fruit.pos())) {
                             this.fruitsCount++;
                             this.score.value('Score: ' + this.fruitsCount);
                             // increment the snake
